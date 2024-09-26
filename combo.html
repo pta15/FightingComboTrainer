@@ -4,7 +4,7 @@
   <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fighting Game Combo Trainer</title>
   <style>
-    /* Existing styles remain the same */
+    /* Existing styles */
 
     body {
       font-family: Arial, sans-serif;
@@ -40,12 +40,16 @@
     .combo-input-section button {
       background-color: #444;
       color: #fff;
-      padding: 10px 15px; /* Adjusted padding */
+      width: 60px; /* Set a fixed width */
+      height: 60px; /* Set a fixed height */
       margin: 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 18px; /* Adjusted font size */
+      font-size: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .combo-input-section button:hover {
@@ -56,19 +60,24 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
+      font-size: 24px;
       min-height: 60px;
       background-color: #444;
-      flex-wrap: wrap; /* Allow wrapping if necessary */
+      flex-wrap: wrap;
     }
 
     .combo-step {
-      margin: 5px 5px; /* Adjusted margins for better alignment */
+      margin: 5px;
       padding: 5px 10px;
       border: 2px solid #888;
       border-radius: 5px;
-      display: inline-block;
-      vertical-align: middle; /* Ensures alignment */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
     }
 
     .correct {
@@ -110,7 +119,7 @@
     }
 
     .icon {
-      font-size: 20px;
+      font-size: 24px;
       vertical-align: middle;
     }
 
@@ -170,12 +179,16 @@
     #modal-content button {
       background-color: #444;
       color: #fff;
-      padding: 10px 15px; /* Adjusted padding */
+      width: 60px;
+      height: 60px;
       margin: 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #modal-content button:hover {
@@ -187,44 +200,15 @@
       font-size: 16px;
     }
 
-    /* Tooltip Styling */
-    .tooltip {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-    }
-
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 220px;
-      background-color: #555;
-      color: #fff;
+    /* Dropdown Styling */
+    .theme-selector {
+      margin: 0 auto 20px;
       text-align: center;
-      border-radius: 6px;
-      padding: 5px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%; /* Position above the icon */
-      left: 50%;
-      margin-left: -110px;
-      opacity: 0;
-      transition: opacity 0.3s;
     }
 
-    .tooltip .tooltiptext::after {
-      content: "";
-      position: absolute;
-      top: 100%; /* At the bottom of the tooltip */
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: #555 transparent transparent transparent;
-    }
-
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
+    .theme-selector select {
+      padding: 10px;
+      font-size: 16px;
     }
 
   </style>
@@ -233,25 +217,22 @@
   <div class="container">
     <h1>Fighting Game Combo Trainer</h1>
 
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+      <label for="theme">Select Controller Theme:</label>
+      <select id="theme">
+        <option value="playstation">PlayStation</option>
+        <option value="xbox">Xbox</option>
+        <option value="tekken">Tekken Notation</option>
+        <option value="numpad">Numpad Notation</option>
+      </select>
+    </div>
+
     <!-- Combo Input Section -->
     <div class="combo-input-section">
       <h2>Select Your Combo Inputs:</h2>
-      <button data-input="triangle" class="icon">△</button>
-      <button data-input="square" class="icon">◻</button>
-      <button data-input="circle" class="icon">◯</button>
-      <button data-input="x" class="icon">✕</button>
-      <button data-input="l1" class="icon">L1</button>
-      <button data-input="r1" class="icon">R1</button>
-      <button data-input="l2" class="icon">L2</button>
-      <button data-input="r2" class="icon">R2</button>
-      <button data-input="l3" class="icon">L3</button>
-      <button data-input="r3" class="icon">R3</button>
-      <br>
-      <button data-input="forward" class="direction">→</button>
-      <button data-input="back" class="direction">←</button>
-      <button data-input="up" class="direction">↑</button>
-      <button data-input="down" class="direction">↓</button>
-      <br>
+      <!-- Buttons will be dynamically generated -->
+      <div id="combo-buttons"></div>
       <button id="reset">Reset Combo</button>
       <button id="refresh">Refresh Combo</button>
       <button id="custom-input">Custom Input</button>
@@ -276,21 +257,7 @@
   <div id="modal">
     <div id="modal-content">
       <h3>Select Buttons for Custom Input:</h3>
-      <button data-input="triangle" class="icon">△</button>
-      <button data-input="square" class="icon">◻</button>
-      <button data-input="circle" class="icon">◯</button>
-      <button data-input="x" class="icon">✕</button>
-      <button data-input="l1" class="icon">L1</button>
-      <button data-input="r1" class="icon">R1</button>
-      <button data-input="l2" class="icon">L2</button>
-      <button data-input="r2" class="icon">R2</button>
-      <button data-input="l3" class="icon">L3</button>
-      <button data-input="r3" class="icon">R3</button>
-      <br>
-      <button data-input="forward" class="direction">→</button>
-      <button data-input="back" class="direction">←</button>
-      <button data-input="up" class="direction">↑</button>
-      <button data-input="down" class="direction">↓</button>
+      <div id="modal-buttons"></div>
       <br><br>
       <div id="selected-buttons">Selected: None</div>
       <br>
@@ -311,79 +278,227 @@
     const doneButton = document.getElementById('done');
     const cancelButton = document.getElementById('cancel');
     const selectedButtonsDisplay = document.getElementById('selected-buttons');
+    const themeSelector = document.getElementById('theme');
+    const comboButtonsContainer = document.getElementById('combo-buttons');
+    const modalButtonsContainer = document.getElementById('modal-buttons');
     let prevButtonStates = {}; // Object to store previous button states
+    let currentTheme = 'playstation'; // Default theme
 
-    // Mapping of button indices to internal names and icons
-    const buttonMapping = {
-      0: {name: 'x', icon: '✕'},       // X button
-      1: {name: 'circle', icon: '◯'},  // Circle button
-      2: {name: 'square', icon: '◻'},  // Square button
-      3: {name: 'triangle', icon: '△'},// Triangle button
-      4: {name: 'l1', icon: 'L1'},     // L1 button
-      5: {name: 'r1', icon: 'R1'},     // R1 button
-      6: {name: 'l2', icon: 'L2'},     // L2 button
-      7: {name: 'r2', icon: 'R2'},     // R2 button
-      10: {name: 'l3', icon: 'L3'},    // L3 button (Left Stick Click)
-      11: {name: 'r3', icon: 'R3'},    // R3 button (Right Stick Click)
-      12: {name: 'up', icon: '↑'},     // D-pad Up
-      13: {name: 'down', icon: '↓'},   // D-pad Down
-      14: {name: 'back', icon: '←'},   // D-pad Left
-      15: {name: 'forward', icon: '→'}, // D-pad Right
-      17: {name: 'touchpad', icon: 'Touchpad'} // Touchpad button
+    // Define themes
+    const themes = {
+      playstation: {
+        name: 'PlayStation',
+        buttons: [
+          { input: 'triangle', label: '△', index: 3 },
+          { input: 'square', label: '◻', index: 2 },
+          { input: 'circle', label: '◯', index: 1 },
+          { input: 'x', label: '✕', index: 0 },
+          { input: 'l1', label: 'L1', index: 4 },
+          { input: 'r1', label: 'R1', index: 5 },
+          { input: 'l2', label: 'L2', index: 6 },
+          { input: 'r2', label: 'R2', index: 7 },
+          { input: 'l3', label: 'L3', index: 10 },
+          { input: 'r3', label: 'R3', index: 11 },
+          { input: 'up', label: '↑', index: 12 },
+          { input: 'down', label: '↓', index: 13 },
+          { input: 'back', label: '←', index: 14 },
+          { input: 'forward', label: '→', index: 15 },
+          { input: 'touchpad', label: 'Touchpad', index: 17 },
+        ],
+        nameToIcon: {
+          'triangle': '△',
+          'square': '◻',
+          'circle': '◯',
+          'x': '✕',
+          'l1': 'L1',
+          'r1': 'R1',
+          'l2': 'L2',
+          'r2': 'R2',
+          'l3': 'L3',
+          'r3': 'R3',
+          'up': '↑',
+          'down': '↓',
+          'back': '←',
+          'forward': '→',
+          'touchpad': 'Touchpad',
+        }
+      },
+      xbox: {
+        name: 'Xbox',
+        buttons: [
+          { input: 'y', label: 'Y', index: 3 },
+          { input: 'x', label: 'X', index: 2 },
+          { input: 'b', label: 'B', index: 1 },
+          { input: 'a', label: 'A', index: 0 },
+          { input: 'lb', label: 'LB', index: 4 },
+          { input: 'rb', label: 'RB', index: 5 },
+          { input: 'lt', label: 'LT', index: 6 },
+          { input: 'rt', label: 'RT', index: 7 },
+          { input: 'ls', label: 'LS', index: 10 },
+          { input: 'rs', label: 'RS', index: 11 },
+          { input: 'up', label: '↑', index: 12 },
+          { input: 'down', label: '↓', index: 13 },
+          { input: 'left', label: '←', index: 14 },
+          { input: 'right', label: '→', index: 15 },
+          { input: 'view', label: 'View', index: 8 },
+          { input: 'menu', label: 'Menu', index: 9 },
+        ],
+        nameToIcon: {
+          'y': 'Y',
+          'x': 'X',
+          'b': 'B',
+          'a': 'A',
+          'lb': 'LB',
+          'rb': 'RB',
+          'lt': 'LT',
+          'rt': 'RT',
+          'ls': 'LS',
+          'rs': 'RS',
+          'up': '↑',
+          'down': '↓',
+          'left': '←',
+          'right': '→',
+          'view': 'View',
+          'menu': 'Menu',
+        }
+      },
+      tekken: {
+        name: 'Tekken Notation',
+        buttons: [
+          { input: '1', label: '1', index: null },
+          { input: '2', label: '2', index: null },
+          { input: '3', label: '3', index: null },
+          { input: '4', label: '4', index: null },
+          { input: 'f', label: 'f', index: null },
+          { input: 'd', label: 'd', index: null },
+          { input: 'b', label: 'b', index: null },
+          { input: 'u', label: 'u', index: null },
+        ],
+        nameToIcon: {
+          '1': '1',
+          '2': '2',
+          '3': '3',
+          '4': '4',
+          'f': 'f',
+          'd': 'd',
+          'b': 'b',
+          'u': 'u',
+        }
+      },
+      numpad: {
+        name: 'Numpad Notation',
+        buttons: [
+          { input: '1', label: '1', index: null },
+          { input: '2', label: '2', index: null },
+          { input: '3', label: '3', index: null },
+          { input: '4', label: '4', index: null },
+          { input: '5', label: '5', index: null },
+          { input: '6', label: '6', index: null },
+          { input: '7', label: '7', index: null },
+          { input: '8', label: '8', index: null },
+          { input: '9', label: '9', index: null },
+        ],
+        nameToIcon: {
+          '1': '1',
+          '2': '2',
+          '3': '3',
+          '4': '4',
+          '5': '5',
+          '6': '6',
+          '7': '7',
+          '8': '8',
+          '9': '9',
+        }
+      },
     };
 
-    // Mapping of internal names to icons
-    const nameToIcon = {
-      'x': '✕',
-      'circle': '◯',
-      'square': '◻',
-      'triangle': '△',
-      'l1': 'L1',
-      'r1': 'R1',
-      'l2': 'L2',
-      'r2': 'R2',
-      'l3': 'L3',
-      'r3': 'R3',
-      'up': '↑',
-      'down': '↓',
-      'back': '←',
-      'forward': '→',
-      'touchpad': 'Touchpad'
-    };
+    let buttonMapping = {}; // Will be updated based on the selected theme
+    let nameToIcon = {}; // Will be updated based on the selected theme
 
-    // Adding combo inputs
-    document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
-      button.addEventListener('click', () => {
-        const input = button.getAttribute('data-input');
-        comboSequence.push(input);
-        if (comboAttempted) {
-          resetComboOnNewButton(); // Reset the combo when a new button is added after the attempt
-        }
-        updateComboDisplay();
+    // Function to generate buttons based on the theme
+    function generateButtons() {
+      comboButtonsContainer.innerHTML = '';
+      modalButtonsContainer.innerHTML = '';
+      const theme = themes[currentTheme];
+
+      theme.buttons.forEach(button => {
+        // Create button for combo input section
+        const comboButton = document.createElement('button');
+        comboButton.setAttribute('data-input', button.input);
+        comboButton.classList.add('icon');
+        comboButton.textContent = button.label;
+        comboButtonsContainer.appendChild(comboButton);
+
+        // Create button for custom input modal
+        const modalButton = document.createElement('button');
+        modalButton.setAttribute('data-input', button.input);
+        modalButton.classList.add('icon');
+        modalButton.textContent = button.label;
+        modalButtonsContainer.appendChild(modalButton);
       });
-    });
 
-    // Open Custom Input Modal
-    document.getElementById('custom-input').addEventListener('click', () => {
-      modal.style.display = 'block';
-      customInputSelections = []; // Reset selections
-      selectedButtonsDisplay.textContent = 'Selected: None';
-    });
+      // Add event listeners to new buttons
+      document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
+        button.addEventListener('click', () => {
+          const input = button.getAttribute('data-input');
+          comboSequence.push(input);
+          if (comboAttempted) {
+            resetComboOnNewButton(); // Reset the combo when a new button is added after the attempt
+          }
+          updateComboDisplay();
+        });
+      });
 
-    // Select buttons inside the modal
-    document.querySelectorAll('#modal-content button[data-input]').forEach(button => {
-      button.addEventListener('click', () => {
-        const input = button.getAttribute('data-input');
-        if (!customInputSelections.includes(input)) {
-          customInputSelections.push(input); // Add selected input to custom input array
-          // Display selected buttons using icons
-          const selectedIcons = customInputSelections.map(input => nameToIcon[input] || input);
-          selectedButtonsDisplay.textContent = `Selected: ${selectedIcons.join(' + ')}`; // Display selected buttons
+      document.querySelectorAll('#modal-content button[data-input]').forEach(button => {
+        button.addEventListener('click', () => {
+          const input = button.getAttribute('data-input');
+          if (!customInputSelections.includes(input)) {
+            customInputSelections.push(input); // Add selected input to custom input array
+            // Display selected buttons using icons
+            const selectedIcons = customInputSelections.map(input => nameToIcon[input] || input);
+            selectedButtonsDisplay.textContent = `Selected: ${selectedIcons.join(' + ')}`; // Display selected buttons
+          }
+        });
+      });
+    }
+
+    // Function to update mappings based on theme
+    function updateMappings() {
+      const theme = themes[currentTheme];
+      buttonMapping = {};
+      nameToIcon = theme.nameToIcon;
+
+      theme.buttons.forEach(button => {
+        if (button.index !== null) {
+          buttonMapping[button.index] = { name: button.input, icon: button.label };
         }
       });
+    }
+
+    // Initialize the theme
+    function initializeTheme() {
+      generateButtons();
+      updateMappings();
+      updateComboDisplay();
+    }
+
+    // Event listener for theme selector
+    themeSelector.addEventListener('change', () => {
+      currentTheme = themeSelector.value;
+      comboSequence.length = 0;
+      currentComboIndex = 0;
+      comboFailed = false;
+      prevButtonStates = {};
+      comboAttempted = false;
+      customInputSelections = [];
+      resetFeedback();
+      initializeTheme();
     });
 
-    // Done button for Custom Input
+    // Initialize default theme
+    initializeTheme();
+
+    // Existing functions and event listeners
     doneButton.addEventListener('click', () => {
       if (customInputSelections.length > 0) {
         const combinedInput = customInputSelections.join(' + ');
@@ -391,11 +506,14 @@
         updateComboDisplay();
       }
       modal.style.display = 'none'; // Close the modal
+      customInputSelections = []; // Reset selections
+      selectedButtonsDisplay.textContent = 'Selected: None';
     });
 
-    // Cancel button to close the modal
     cancelButton.addEventListener('click', () => {
       modal.style.display = 'none'; // Close the modal
+      customInputSelections = []; // Reset selections
+      selectedButtonsDisplay.textContent = 'Selected: None';
     });
 
     document.getElementById('reset').addEventListener('click', () => {
@@ -410,6 +528,12 @@
 
     document.getElementById('refresh').addEventListener('click', () => {
       refreshCombo(); // Call the refresh function to manually reset
+    });
+
+    document.getElementById('custom-input').addEventListener('click', () => {
+      modal.style.display = 'block';
+      customInputSelections = []; // Reset selections
+      selectedButtonsDisplay.textContent = 'Selected: None';
     });
 
     function updateComboDisplay() {
@@ -477,7 +601,6 @@
       highlightNextStep();
     }
 
-    // Function to reset the combo when a new button is added after an attempt
     function resetComboOnNewButton() {
       currentComboIndex = 0;
       comboFailed = false;
@@ -506,10 +629,10 @@
         // Detect newly pressed buttons
         gamepad.buttons.forEach((button, index) => {
           if (buttonMapping[index]) {
-            const {name} = buttonMapping[index];
+            const { name } = buttonMapping[index];
             if (button.pressed && !prevButtonStates[index]) {
               // Button is newly pressed
-              if (name === 'touchpad') {
+              if (name === 'touchpad' || name === 'view') {
                 refreshCombo();
               } else {
                 newlyPressedButtons.push(name);
@@ -564,6 +687,7 @@
     window.addEventListener('gamepaddisconnected', () => {
       feedbackDisplay.textContent = 'Gamepad disconnected.';
     });
+
   </script>
 </body>
 </html>
