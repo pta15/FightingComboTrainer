@@ -140,8 +140,9 @@
       vertical-align: middle;
     }
 
-    /* Touchpad Icon Styling */
-    .icon.touchpad-icon {
+    /* Touchpad and View Icon Styling */
+    .icon.touchpad-icon,
+    .icon.view-icon {
       display: inline-block;
       width: 30px;
       height: 20px;
@@ -153,7 +154,8 @@
       margin: 0 5px;
     }
 
-    .icon.touchpad-icon::after {
+    .icon.touchpad-icon::after,
+    .icon.view-icon::after {
       content: '';
       display: block;
       width: 14px;
@@ -259,8 +261,8 @@
     <div class="controller-input-section">
       <h2>Controller Input:</h2>
       <div id="controller-feedback" class="feedback">Press Buttons...</div>
-      <div class="refresh-info">
-        Press the <span class="icon touchpad-icon" title="Touchpad button"></span> Touchpad button to refresh the combo.
+      <div class="refresh-info" id="refresh-info">
+        <!-- This will be dynamically updated -->
       </div>
     </div>
   </div>
@@ -293,101 +295,122 @@
     const themeSelector = document.getElementById('theme');
     const comboButtonsContainer = document.getElementById('combo-buttons');
     const modalButtonsContainer = document.getElementById('modal-buttons');
+    const refreshInfo = document.getElementById('refresh-info');
     let prevButtonStates = {}; // Object to store previous button states
     let currentTheme = 'playstation'; // Default theme
+
+    // Define internal button names for consistent mapping
+    const internalButtons = [
+      'face_top',
+      'face_left',
+      'face_right',
+      'face_bottom',
+      'l1',
+      'r1',
+      'l2',
+      'r2',
+      'l3',
+      'r3',
+      'dpad_up',
+      'dpad_down',
+      'dpad_left',
+      'dpad_right',
+    ];
 
     // Define themes
     const themes = {
       playstation: {
         name: 'PlayStation',
+        refreshButton: 'touchpad', // For refreshing combo
+        refreshButtonIndex: 17,
+        refreshButtonLabel: '<span class="icon touchpad-icon" title="Touchpad button"></span> Touchpad button',
         buttons: [
-          { input: 'triangle', label: '△', index: 3 },
-          { input: 'square', label: '◻', index: 2 },
-          { input: 'circle', label: '◯', index: 1 },
-          { input: 'x', label: '✕', index: 0 },
+          { input: 'face_top', label: '△', index: 3 },
+          { input: 'face_left', label: '◻', index: 2 },
+          { input: 'face_right', label: '◯', index: 1 },
+          { input: 'face_bottom', label: '✕', index: 0 },
           { input: 'l1', label: 'L1', index: 4 },
           { input: 'r1', label: 'R1', index: 5 },
           { input: 'l2', label: 'L2', index: 6 },
           { input: 'r2', label: 'R2', index: 7 },
           { input: 'l3', label: 'L3', index: 10 },
           { input: 'r3', label: 'R3', index: 11 },
-          { input: 'up', label: '↑', index: 12 },
-          { input: 'down', label: '↓', index: 13 },
-          { input: 'back', label: '←', index: 14 },
-          { input: 'forward', label: '→', index: 15 },
-          // Removed touchpad button from inputs
+          { input: 'dpad_up', label: '↑', index: 12 },
+          { input: 'dpad_down', label: '↓', index: 13 },
+          { input: 'dpad_left', label: '←', index: 14 },
+          { input: 'dpad_right', label: '→', index: 15 },
         ],
         nameToIcon: {
-          'triangle': '△',
-          'square': '◻',
-          'circle': '◯',
-          'x': '✕',
+          'face_top': '△',
+          'face_left': '◻',
+          'face_right': '◯',
+          'face_bottom': '✕',
           'l1': 'L1',
           'r1': 'R1',
           'l2': 'L2',
           'r2': 'R2',
           'l3': 'L3',
           'r3': 'R3',
-          'up': '↑',
-          'down': '↓',
-          'back': '←',
-          'forward': '→',
-          // Removed touchpad
+          'dpad_up': '↑',
+          'dpad_down': '↓',
+          'dpad_left': '←',
+          'dpad_right': '→',
         }
       },
       xbox: {
         name: 'Xbox',
+        refreshButton: 'view', // For refreshing combo
+        refreshButtonIndex: 8,
+        refreshButtonLabel: '<span class="icon view-icon" title="View button"></span> View button',
         buttons: [
-          { input: 'y', label: 'Y', index: 3 },
-          { input: 'x', label: 'X', index: 2 },
-          { input: 'b', label: 'B', index: 1 },
-          { input: 'a', label: 'A', index: 0 },
-          { input: 'lb', label: 'LB', index: 4 },
-          { input: 'rb', label: 'RB', index: 5 },
-          { input: 'lt', label: 'LT', index: 6 },
-          { input: 'rt', label: 'RT', index: 7 },
-          { input: 'ls', label: 'LS', index: 10 },
-          { input: 'rs', label: 'RS', index: 11 },
-          { input: 'up', label: '↑', index: 12 },
-          { input: 'down', label: '↓', index: 13 },
-          { input: 'left', label: '←', index: 14 },
-          { input: 'right', label: '→', index: 15 },
-          // Removed view and menu buttons
+          { input: 'face_top', label: 'Y', index: 3 },
+          { input: 'face_left', label: 'X', index: 2 },
+          { input: 'face_right', label: 'B', index: 1 },
+          { input: 'face_bottom', label: 'A', index: 0 },
+          { input: 'l1', label: 'LB', index: 4 },
+          { input: 'r1', label: 'RB', index: 5 },
+          { input: 'l2', label: 'LT', index: 6 },
+          { input: 'r2', label: 'RT', index: 7 },
+          { input: 'l3', label: 'LS', index: 10 },
+          { input: 'r3', label: 'RS', index: 11 },
+          { input: 'dpad_up', label: '↑', index: 12 },
+          { input: 'dpad_down', label: '↓', index: 13 },
+          { input: 'dpad_left', label: '←', index: 14 },
+          { input: 'dpad_right', label: '→', index: 15 },
         ],
         nameToIcon: {
-          'y': 'Y',
-          'x': 'X',
-          'b': 'B',
-          'a': 'A',
-          'lb': 'LB',
-          'rb': 'RB',
-          'lt': 'LT',
-          'rt': 'RT',
-          'ls': 'LS',
-          'rs': 'RS',
-          'up': '↑',
-          'down': '↓',
-          'left': '←',
-          'right': '→',
-          // Removed view and menu
+          'face_top': 'Y',
+          'face_left': 'X',
+          'face_right': 'B',
+          'face_bottom': 'A',
+          'l1': 'LB',
+          'r1': 'RB',
+          'l2': 'LT',
+          'r2': 'RT',
+          'l3': 'LS',
+          'r3': 'RS',
+          'dpad_up': '↑',
+          'dpad_down': '↓',
+          'dpad_left': '←',
+          'dpad_right': '→',
         }
       },
       tekken: {
         name: 'Tekken Notation',
         buttons: [
-          { input: '1', label: '1', index: null }, // Left Punch
-          { input: '2', label: '2', index: null }, // Right Punch
-          { input: '3', label: '3', index: null }, // Left Kick
-          { input: '4', label: '4', index: null }, // Right Kick
-          { input: 'f', label: 'f', index: null }, // Forward
-          { input: 'd', label: 'd', index: null }, // Down
-          { input: 'b', label: 'b', index: null }, // Back
-          { input: 'u', label: 'u', index: null }, // Up
-          { input: 'df', label: 'df', index: null },
-          { input: 'db', label: 'db', index: null },
-          { input: 'uf', label: 'uf', index: null },
-          { input: 'ub', label: 'ub', index: null },
-          { input: 'n', label: 'n', index: null }, // Neutral
+          { input: '1', label: '1' }, // Left Punch
+          { input: '2', label: '2' }, // Right Punch
+          { input: '3', label: '3' }, // Left Kick
+          { input: '4', label: '4' }, // Right Kick
+          { input: 'f', label: 'f' }, // Forward
+          { input: 'd', label: 'd' }, // Down
+          { input: 'b', label: 'b' }, // Back
+          { input: 'u', label: 'u' }, // Up
+          { input: 'df', label: 'df' },
+          { input: 'db', label: 'db' },
+          { input: 'uf', label: 'uf' },
+          { input: 'ub', label: 'ub' },
+          { input: 'n', label: 'n' }, // Neutral
         ],
         nameToIcon: {
           '1': '1',
@@ -408,15 +431,15 @@
       numpad: {
         name: 'Numpad Notation',
         buttons: [
-          { input: '1', label: '1', index: null },
-          { input: '2', label: '2', index: null },
-          { input: '3', label: '3', index: null },
-          { input: '4', label: '4', index: null },
-          { input: '5', label: '5', index: null },
-          { input: '6', label: '6', index: null },
-          { input: '7', label: '7', index: null },
-          { input: '8', label: '8', index: null },
-          { input: '9', label: '9', index: null },
+          { input: '1', label: '1' },
+          { input: '2', label: '2' },
+          { input: '3', label: '3' },
+          { input: '4', label: '4' },
+          { input: '5', label: '5' },
+          { input: '6', label: '6' },
+          { input: '7', label: '7' },
+          { input: '8', label: '8' },
+          { input: '9', label: '9' },
         ],
         nameToIcon: {
           '1': '1',
@@ -434,6 +457,9 @@
 
     let buttonMapping = {}; // Will be updated based on the selected theme
     let nameToIcon = {}; // Will be updated based on the selected theme
+    let refreshButtonName = ''; // The internal name for the refresh button
+    let refreshButtonIndex = null; // The index of the refresh button
+    let refreshButtonLabel = ''; // The label to display for the refresh button
 
     // Function to generate buttons based on the theme
     function generateButtons() {
@@ -476,7 +502,7 @@
             customInputSelections.push(input); // Add selected input to custom input array
             // Display selected buttons using icons
             const selectedIcons = customInputSelections.map(input => nameToIcon[input] || input);
-            selectedButtonsDisplay.textContent = `Selected: ${selectedIcons.join(' + ')}`; // Display selected buttons
+            selectedButtonsDisplay.innerHTML = `Selected: ${selectedIcons.join(' + ')}`; // Display selected buttons
           }
         });
       });
@@ -487,9 +513,19 @@
       const theme = themes[currentTheme];
       buttonMapping = {};
       nameToIcon = theme.nameToIcon;
+      refreshButtonName = theme.refreshButton;
+      refreshButtonIndex = theme.refreshButtonIndex;
+      refreshButtonLabel = theme.refreshButtonLabel || '';
+
+      // Update the refresh info tooltip
+      if (refreshButtonLabel) {
+        refreshInfo.innerHTML = `Press the ${refreshButtonLabel} to refresh the combo.`;
+      } else {
+        refreshInfo.innerHTML = '';
+      }
 
       theme.buttons.forEach(button => {
-        if (button.index !== null) {
+        if (button.index !== undefined && button.index !== null) {
           buttonMapping[button.index] = { name: button.input, icon: button.label };
         }
       });
@@ -497,19 +533,15 @@
 
     // Initialize the theme
     function initializeTheme() {
-      generateButtons();
       updateMappings();
+      generateButtons();
       updateComboDisplay();
     }
 
     // Event listener for theme selector
     themeSelector.addEventListener('change', () => {
       currentTheme = themeSelector.value;
-      comboSequence.length = 0;
-      currentComboIndex = 0;
-      comboFailed = false;
       prevButtonStates = {};
-      comboAttempted = false;
       customInputSelections = [];
       resetFeedback();
       initializeTheme();
@@ -648,19 +680,16 @@
 
         // Detect newly pressed buttons
         gamepad.buttons.forEach((button, index) => {
-          if (buttonMapping[index]) {
-            const { name } = buttonMapping[index];
-            if (button.pressed && !prevButtonStates[index]) {
-              // Button is newly pressed
-              if (name === 'touchpad') {
-                refreshCombo();
-              } else {
-                newlyPressedButtons.push(name);
-              }
+          if (button.pressed && !prevButtonStates[index]) {
+            if (index === refreshButtonIndex) {
+              refreshCombo();
+            } else if (buttonMapping[index]) {
+              const { name } = buttonMapping[index];
+              newlyPressedButtons.push(name);
             }
-            // Update prevButtonStates
-            prevButtonStates[index] = button.pressed;
           }
+          // Update prevButtonStates
+          prevButtonStates[index] = button.pressed;
         });
 
         if (currentComboIndex < comboSequence.length && !comboFailed) {
