@@ -95,7 +95,6 @@
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      /* width: 60px; */ /* Removed fixed width */
       height: 60px; /* Keep height fixed */
       font-size: 24px;
       white-space: nowrap; /* Prevent wrapping */
@@ -235,16 +234,17 @@
       top: 0;
       width: 100%;
       height: 100%;
+      overflow: auto; /* Enable scrolling if content is larger than the screen */
       background-color: rgba(0, 0, 0, 0.5);
     }
 
     #modal-content {
       background-color: #333;
-      margin: 15% auto;
+      margin: 5% auto;
       padding: 20px;
       border-radius: 10px;
-      width: 80%;
-      max-width: 400px;
+      width: 90%;
+      max-width: 600px;
       text-align: center;
       color: #fff;
     }
@@ -272,6 +272,18 @@
       margin-top: 10px;
       font-size: 16px;
       white-space: nowrap; /* Prevent wrapping */
+    }
+
+    /* Adjustments to prevent overflow in modal */
+    #modal-content {
+      overflow: auto;
+      max-height: 80vh;
+    }
+
+    #modal-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     /* Dropdown Styling */
@@ -468,6 +480,9 @@
       },
       tekken: {
         name: 'Tekken Notation',
+        refreshButton: 'share', // Using the same refresh button index
+        refreshButtonIndex: 8,
+        refreshButtonLabel: '<span class="icon refresh-icon" title="Share/View button"></span> Share/View button',
         buttons: [
           { input: 'face_left', imgSrc: 'images/Tekken/buttons/1.webp', index: 2 }, // 1 (Square/X)
           { input: 'face_top', imgSrc: 'images/Tekken/buttons/2.webp', index: 3 },  // 2 (Triangle/Y)
@@ -494,11 +509,13 @@
           'df': '<img src="images/Tekken/arrows/df.webp" alt="df" class="icon-image">',
           'db': '<img src="images/Tekken/arrows/db.webp" alt="db" class="icon-image">',
           'n': '<img src="images/Tekken/arrows/n.webp" alt="n" class="icon-image">', // Neutral
-          // You can add mappings for button combinations like 'face_left + face_top' if needed
         },
       },
       numpad: {
         name: 'Numpad Notation',
+        refreshButton: 'share', // Using the same refresh button index
+        refreshButtonIndex: 8,
+        refreshButtonLabel: '<span class="icon refresh-icon" title="Share/View button"></span> Share/View button',
         buttons: [
           { input: '7', label: '7' },
           { input: '8', label: '8' },
