@@ -115,6 +115,44 @@
       font-size: 24px;
       vertical-align: middle;
     }
+
+    /* Modal Styling */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #modal-content {
+      background-color: #333;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+      color: #fff;
+    }
+
+    #modal-content button {
+      background-color: #444;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #modal-content button:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
@@ -134,6 +172,7 @@
       <button data-input="down" class="direction">↓</button>
       <button id="reset">Reset Combo</button>
       <button id="refresh">Refresh Combo</button>
+      <button id="custom-input">Custom Input</button>
     </div>
 
     <!-- Combo Display Section -->
@@ -148,15 +187,36 @@
     </div>
   </div>
 
+  <!-- Modal for Custom Input -->
+  <div id="modal">
+    <div id="modal-content">
+      <h3>Select Buttons for Custom Input:</h3>
+      <button data-input="triangle" class="icon">△</button>
+      <button data-input="square" class="icon">◻</button>
+      <button data-input="circle" class="icon">◯</button>
+      <button data-input="x" class="icon">✕</button>
+      <button data-input="forward" class="direction">→</button>
+      <button data-input="back" class="direction">←</button>
+      <button data-input="up" class="direction">↑</button>
+      <button data-input="down" class="direction">↓</button>
+      <br><br>
+      <button id="done">Done</button>
+      <button id="cancel">Cancel</button>
+    </div>
+  </div>
+
   <script>
     const comboSequence = [];
     let currentComboIndex = -1; // Start with -1 to avoid highlighting the first step prematurely
     let comboFailed = false; // Track if the combo has failed
     let inputProcessed = false; // Debounce mechanism to prevent repeated input
     let comboAttempted = false; // Track if the combo was attempted before adding a new button
-    let startTime = null; // Track the time the combo started
+    let customInputSelections = []; // Track the selected buttons for custom input
     const comboDisplay = document.getElementById('combo-sequence');
     const feedbackDisplay = document.getElementById('controller-feedback');
+    const modal = document.getElementById('modal');
+    const doneButton = document.getElementById('done');
+    const cancelButton = document.getElementById('cancel');
 
     // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
@@ -170,13 +230,43 @@
       });
     });
 
+    // Open Custom Input Modal
+    document.getElementById('custom-input').addEventListener('click', () => {
+      modal.style.display = 'block';
+      customInputSelections = []; // Reset selections
+    });
+
+    // Select buttons inside the modal
+    document.querySelectorAll('#modal-content button[data-input]').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = button.getAttribute('data-input');
+        if (!customInputSelections.includes(input)) {
+          customInputSelections.push(input); // Add selected input to custom input array
+        }
+      });
+    });
+
+    // Done button for Custom Input
+    doneButton.addEventListener('click', () => {
+      if (customInputSelections.length > 0) {
+        const combinedInput = customInputSelections.join(' + ');
+        comboSequence.push(combinedInput);
+        updateComboDisplay();
+      }
+      modal.style.display = 'none'; // Close the modal
+    });
+
+    // Cancel button to close the modal
+    cancelButton.addEventListener('click', () => {
+      modal.style.display = 'none'; // Close the modal
+    });
+
     document.getElementById('reset').addEventListener('click', () => {
       comboSequence.length = 0;
       currentComboIndex = -1; // Reset the index
       comboFailed = false;
       inputProcessed = false;
       comboAttempted = false;
-      startTime = null; // Reset the start time
       updateComboDisplay();
       resetFeedback();
     });
@@ -185,39 +275,15 @@
       refreshCombo(); // Call the refresh function to manually reset
     });
 
-    // Resets the combo progress when a new button is added after the combo is attempted
-    function resetComboOnNewButton() {
-      currentComboIndex = -1; // Reset progress
-      comboFailed = false;
-      inputProcessed = false;
-      startTime = null; // Reset the start time
-      setComboRestartFeedback(); // Show feedback message
-    }
-
     function updateComboDisplay() {
       if (comboSequence.length === 0) {
         comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
       } else {
         comboDisplay.innerHTML = comboSequence.map((step, index) =>
-          `<span class="combo-step" id="step-${index}">${convertInputToIcon(step)}</span>`
+          `<span class="combo-step" id="step-${index}">${step}</span>`
         ).join('');
       }
       highlightNextStep();
-    }
-
-    // Convert inputs to PlayStation icons or arrows for display
-    function convertInputToIcon(input) {
-      const iconMapping = {
-        'triangle': '△',
-        'square': '◻',
-        'circle': '◯',
-        'x': '✕',
-        'forward': '→',
-        'back': '←',
-        'up': '↑',
-        'down': '↓'
-      };
-      return iconMapping[input] || input;
     }
 
     function highlightNextStep() {
@@ -247,39 +313,16 @@
       stepElement.classList.add(isCorrect ? 'correct' : 'incorrect');
     }
 
-    function showFinalFeedback(isSuccess, elapsedTime) {
-      if (isSuccess) {
-        feedbackDisplay.textContent = `Combo Successful! Time: ${elapsedTime.toFixed(2)} seconds`;
-        feedbackDisplay.classList.remove('attempting');
-        feedbackDisplay.classList.add('green');
-      } else {
-        feedbackDisplay.textContent = 'Combo Failed!';
-        feedbackDisplay.classList.remove('attempting');
-        feedbackDisplay.classList.add('red');
-      }
+    function showFinalFeedback(isSuccess) {
+      feedbackDisplay.textContent = isSuccess ? 'Combo Successful!' : 'Combo Failed!';
+      feedbackDisplay.classList.remove('attempting');
+      feedbackDisplay.classList.add(isSuccess ? 'green' : 'red');
     }
 
     function setAttemptingFeedback() {
       feedbackDisplay.textContent = 'Combo Attempting...';
       feedbackDisplay.classList.add('attempting');
       comboAttempted = true; // Mark the combo as attempted
-      startTime = Date.now(); // Start the timer when the first button is pressed
-    }
-
-    // Show a message when the combo is restarted due to a new button addition
-    function setComboRestartFeedback() {
-      feedbackDisplay.textContent = 'Combo restarted due to new button addition.';
-      feedbackDisplay.classList.remove('green', 'red', 'attempting');
-    }
-
-    // Automatically refresh the combo after a successful attempt
-    function refreshCombo() {
-      currentComboIndex = -1; // Reset the index to start again
-      comboFailed = false;
-      inputProcessed = false;
-      startTime = null; // Reset the timer
-      resetFeedback(); // Reset the feedback and combo display
-      highlightNextStep(); // Highlight the first step again
     }
 
     // Gamepad API logic
@@ -339,8 +382,7 @@
       }
 
       if (currentComboIndex === comboSequence.length && !comboFailed) {
-        const elapsedTime = (Date.now() - startTime) / 1000; // Calculate the time in seconds
-        showFinalFeedback(true, elapsedTime); // Combo completed successfully, show elapsed time
+        showFinalFeedback(true); // Combo completed successfully
         setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
       }
     }
