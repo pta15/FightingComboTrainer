@@ -145,18 +145,65 @@
       }
     }
 
-    // Example for feedback
+    // Gamepad API logic
+    let gamepadIndex;
+
+    function pollGamepad() {
+      const gamepads = navigator.getGamepads();
+      const gamepad = gamepads[gamepadIndex];
+
+      if (gamepad) {
+        // Map controller buttons to combo inputs (simplified mapping for example purposes)
+        const buttonMapping = {
+          0: 'x',       // X button
+          1: 'circle',  // Circle button
+          2: 'square',  // Square button
+          3: 'triangle',// Triangle button
+          12: 'up',     // D-pad Up
+          13: 'down',   // D-pad Down
+          14: 'back',   // D-pad Left
+          15: 'forward' // D-pad Right
+        };
+
+        gamepad.buttons.forEach((button, index) => {
+          if (button.pressed && buttonMapping[index]) {
+            checkInput(buttonMapping[index]);
+          }
+        });
+      }
+      requestAnimationFrame(pollGamepad);
+    }
+
+    function checkInput(input) {
+      if (comboSequence.length === 0) return;
+
+      // Check if the input matches the next in the combo sequence
+      const expectedInput = comboSequence.shift(); // Get the first input from the combo
+
+      if (input === expectedInput) {
+        showFeedback(true);
+      } else {
+        showFeedback(false);
+      }
+
+      updateComboDisplay();
+    }
+
     function showFeedback(isCorrect) {
       feedbackDisplay.textContent = isCorrect ? 'Correct Input!' : 'Incorrect Input!';
       feedbackDisplay.classList.remove('green', 'red');
       feedbackDisplay.classList.add(isCorrect ? 'green' : 'red');
     }
 
-    // Simulate correct or incorrect input feedback (to be replaced with actual controller input logic)
-    setInterval(() => {
-      const isCorrect = Math.random() > 0.5;
-      showFeedback(isCorrect);
-    }, 2000);
+    window.addEventListener('gamepadconnected', (event) => {
+      gamepadIndex = event.gamepad.index;
+      feedbackDisplay.textContent = 'Gamepad connected!';
+      pollGamepad(); // Start polling for inputs
+    });
+
+    window.addEventListener('gamepaddisconnected', () => {
+      feedbackDisplay.textContent = 'Gamepad disconnected.';
+    });
 
   </script>
 </body>
