@@ -40,7 +40,7 @@
     .combo-input-section button {
       background-color: #444;
       color: #fff;
-      width: 60px; /* Set a fixed width */
+      width: 80px; /* Increased width */
       height: 60px; /* Set a fixed height */
       margin: 5px;
       border: none;
@@ -54,6 +54,14 @@
 
     .combo-input-section button:hover {
       background-color: #555;
+    }
+
+    /* Adjust font-size for triangle and circle icons */
+    .combo-input-section button[data-input="face_top"],
+    .combo-input-section button[data-input="face_right"],
+    #modal-content button[data-input="face_top"],
+    #modal-content button[data-input="face_right"] {
+      font-size: 28px; /* Increased font size for △ and ◯ */
     }
 
     /* Style for action buttons */
@@ -87,9 +95,10 @@
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      width: 60px;
-      height: 60px;
+      /* width: 60px; */ /* Removed fixed width */
+      height: 60px; /* Keep height fixed */
       font-size: 24px;
+      white-space: nowrap; /* Prevent wrapping */
     }
 
     .correct {
@@ -165,6 +174,52 @@
       transform: translate(-50%, -50%);
     }
 
+    /* Timer Styling */
+    .timer-section {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .timer {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .timer.green {
+      color: limegreen;
+    }
+
+    .timer.red {
+      color: red;
+    }
+
+    .recent-times {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .recent-times ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .recent-times li {
+      margin: 5px 0;
+    }
+
+    .recent-times .green {
+      color: limegreen;
+    }
+
+    .recent-times .red {
+      color: red;
+    }
+
+    .recent-times .placeholder {
+      color: #888;
+      font-style: italic;
+    }
+
     /* Modal Styling */
     #modal {
       display: none;
@@ -191,7 +246,7 @@
     #modal-content button {
       background-color: #444;
       color: #fff;
-      width: 60px;
+      width: 80px; /* Increased width */
       height: 60px;
       margin: 5px;
       border: none;
@@ -210,6 +265,7 @@
     #selected-buttons {
       margin-top: 10px;
       font-size: 16px;
+      white-space: nowrap; /* Prevent wrapping */
     }
 
     /* Dropdown Styling */
@@ -221,6 +277,12 @@
     .theme-selector select {
       padding: 10px;
       font-size: 16px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #555;
+      margin: 20px 0;
     }
 
   </style>
@@ -259,6 +321,16 @@
     <div class="controller-input-section">
       <h2>Controller Input:</h2>
       <div id="controller-feedback" class="feedback">Press Buttons...</div>
+      <div class="timer-section">
+        <div id="combo-timer" class="timer">Timer: 0.00s</div>
+      </div>
+      <div class="recent-times" id="recent-times">
+        <h3>Recent Times:</h3>
+        <ul id="times-list">
+          <li class="placeholder">No times recorded yet</li>
+        </ul>
+      </div>
+      <hr>
       <div class="refresh-info" id="refresh-info">
         <!-- This will be dynamically updated -->
       </div>
@@ -296,6 +368,9 @@
     const refreshInfo = document.getElementById('refresh-info');
     let prevButtonStates = {}; // Object to store previous button states
     let currentTheme = 'playstation'; // Default theme
+    let comboStartTime = null;
+    let recentTimes = []; // Array to hold the last three times
+    let timerInterval = null; // Interval for updating the timer display
 
     // Define internal button names for consistent mapping
     const internalButtons = [
@@ -574,6 +649,7 @@
       comboAttempted = false;
       updateComboDisplay();
       resetFeedback();
+      resetTimer();
     });
 
     document.getElementById('refresh').addEventListener('click', () => {
@@ -649,6 +725,7 @@
       prevButtonStates = {};
       resetFeedback();
       highlightNextStep();
+      resetTimer();
     }
 
     function resetComboOnNewButton() {
@@ -657,6 +734,89 @@
       prevButtonStates = {};
       resetFeedback();
       highlightNextStep();
+      resetTimer();
+    }
+
+    function resetTimer() {
+      if (timerInterval !== null) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      comboStartTime = null;
+      document.getElementById('combo-timer').textContent = 'Timer: 0.00s';
+      document.getElementById('combo-timer').classList.remove('green', 'red');
+    }
+
+    function startComboTimer() {
+      if (comboStartTime === null) {
+        comboStartTime = performance.now();
+        // Start the interval to update the timer display every 50ms
+        timerInterval = setInterval(updateTimerDisplay, 50);
+      }
+    }
+
+    function updateTimerDisplay() {
+      if (comboStartTime !== null) {
+        const currentTime = performance.now();
+        const elapsedTime = (currentTime - comboStartTime) / 1000;
+        document.getElementById('combo-timer').textContent = `Timer: ${elapsedTime.toFixed(2)}s`;
+      } else {
+        document.getElementById('combo-timer').textContent = `Timer: 0.00s`;
+      }
+    }
+
+    function stopComboTimer(success) {
+      if (comboStartTime !== null) {
+        const comboEndTime = performance.now();
+        const totalTime = (comboEndTime - comboStartTime) / 1000;
+        // Stop updating the timer display
+        clearInterval(timerInterval);
+        timerInterval = null;
+        // Update the timer display one last time
+        document.getElementById('combo-timer').textContent = `Timer: ${totalTime.toFixed(2)}s`;
+        // Change the color based on success or failure
+        const timerElement = document.getElementById('combo-timer');
+        if (success) {
+          timerElement.classList.remove('red');
+          timerElement.classList.add('green');
+        } else {
+          timerElement.classList.remove('green');
+          timerElement.classList.add('red');
+        }
+        // Add the time to recent times
+        addRecentTime(totalTime, success);
+        // Reset comboStartTime
+        comboStartTime = null;
+      }
+    }
+
+    function addRecentTime(time, success) {
+      // Add the time to the beginning of the array
+      recentTimes.unshift({ time: time.toFixed(2), success: success });
+      // Keep only the last three times
+      if (recentTimes.length > 3) {
+        recentTimes.pop();
+      }
+      // Update the display
+      updateRecentTimesDisplay();
+    }
+
+    function updateRecentTimesDisplay() {
+      const timesList = document.getElementById('times-list');
+      timesList.innerHTML = ''; // Clear the list
+      if (recentTimes.length === 0) {
+        const placeholder = document.createElement('li');
+        placeholder.textContent = 'No times recorded yet';
+        placeholder.classList.add('placeholder');
+        timesList.appendChild(placeholder);
+      } else {
+        recentTimes.forEach(entry => {
+          const li = document.createElement('li');
+          li.textContent = `${entry.time}s`;
+          li.classList.add(entry.success ? 'green' : 'red');
+          timesList.appendChild(li);
+        });
+      }
     }
 
     // Gamepad API logic
@@ -703,6 +863,10 @@
           }
 
           if (isCorrect) {
+            if (currentComboIndex === 0) {
+              // First correct input in the combo
+              startComboTimer();
+            }
             showStepFeedback(currentComboIndex, true);
             currentComboIndex++;
             highlightNextStep();
@@ -712,10 +876,12 @@
             comboFailed = true;
             showStepFeedback(currentComboIndex, false);
             showFinalFeedback(false);
+            stopComboTimer(false);
           }
 
           if (currentComboIndex === comboSequence.length && !comboFailed) {
             showFinalFeedback(true);
+            stopComboTimer(true);
             setTimeout(refreshCombo, 1000);
           }
         }
