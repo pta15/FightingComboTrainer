@@ -4,6 +4,7 @@
   <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fighting Game Combo Trainer</title>
   <style>
+    /* Your original CSS styles remain unchanged */
     body {
       font-family: Arial, sans-serif;
       background-color: #222;
@@ -225,6 +226,30 @@
     const selectedButtonsDisplay = document.getElementById('selected-buttons');
     let prevButtonStates = {}; // Object to store previous button states
 
+    // Mapping of button indices to internal names and icons
+    const buttonMapping = {
+      0: {name: 'x', icon: '✕'},       // X button
+      1: {name: 'circle', icon: '◯'},  // Circle button
+      2: {name: 'square', icon: '◻'},  // Square button
+      3: {name: 'triangle', icon: '△'},// Triangle button
+      12: {name: 'up', icon: '↑'},     // D-pad Up
+      13: {name: 'down', icon: '↓'},   // D-pad Down
+      14: {name: 'back', icon: '←'},   // D-pad Left
+      15: {name: 'forward', icon: '→'} // D-pad Right
+    };
+
+    // Mapping of internal names to icons
+    const nameToIcon = {
+      'x': '✕',
+      'circle': '◯',
+      'square': '◻',
+      'triangle': '△',
+      'up': '↑',
+      'down': '↓',
+      'back': '←',
+      'forward': '→'
+    };
+
     // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
       button.addEventListener('click', () => {
@@ -250,7 +275,9 @@
         const input = button.getAttribute('data-input');
         if (!customInputSelections.includes(input)) {
           customInputSelections.push(input); // Add selected input to custom input array
-          selectedButtonsDisplay.textContent = `Selected: ${customInputSelections.join(' + ')}`; // Display selected buttons
+          // Display selected buttons using icons
+          const selectedIcons = customInputSelections.map(input => nameToIcon[input] || input);
+          selectedButtonsDisplay.textContent = `Selected: ${selectedIcons.join(' + ')}`; // Display selected buttons
         }
       });
     });
@@ -288,17 +315,23 @@
       if (comboSequence.length === 0) {
         comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
       } else {
-        comboDisplay.innerHTML = comboSequence.map((step, index) =>
-          `<span class="combo-step" id="step-${index}">${step}</span>`
-        ).join('');
+        comboDisplay.innerHTML = comboSequence.map((step, index) => {
+          // Split the step if it contains ' + ' (custom input)
+          const inputs = step.split(' + ');
+          // Map each input to its icon
+          const icons = inputs.map(input => nameToIcon[input] || input); // Use the icon or leave as is if not found
+          // Join the icons with ' + '
+          const displayText = icons.join(' + ');
+          return `<span class="combo-step" id="step-${index}">${displayText}</span>`;
+        }).join('');
       }
       highlightNextStep();
     }
 
     function highlightNextStep() {
-      // Clear previous highlights
+      // Clear previous 'next-step' highlights
       comboSequence.forEach((_, index) => {
-        document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect', 'next-step');
+        document.getElementById(`step-${index}`).classList.remove('next-step');
       });
 
       // Highlight the next expected input if we are still within the combo
@@ -318,7 +351,7 @@
 
     function showStepFeedback(index, isCorrect) {
       const stepElement = document.getElementById(`step-${index}`);
-      stepElement.classList.remove('correct', 'incorrect', 'next-step');
+      stepElement.classList.remove('next-step');
       stepElement.classList.add(isCorrect ? 'correct' : 'incorrect');
     }
 
@@ -360,16 +393,6 @@
       const gamepad = gamepads[gamepadIndex];
 
       if (gamepad && currentComboIndex < comboSequence.length && !comboFailed) {
-        const buttonMapping = {
-          0: 'x',       // X button
-          1: 'circle',  // Circle button
-          2: 'square',  // Square button
-          3: 'triangle',// Triangle button
-          12: 'up',     // D-pad Up
-          13: 'down',   // D-pad Down
-          14: 'back',   // D-pad Left
-          15: 'forward' // D-pad Right
-        };
 
         const newlyPressedButtons = [];
 
@@ -383,10 +406,10 @@
         // Detect newly pressed buttons
         gamepad.buttons.forEach((button, index) => {
           if (buttonMapping[index]) {
-            const buttonName = buttonMapping[index];
+            const {name} = buttonMapping[index];
             if (button.pressed && !prevButtonStates[index]) {
               // Button is newly pressed
-              newlyPressedButtons.push(buttonName);
+              newlyPressedButtons.push(name);
             }
             // Update prevButtonStates
             prevButtonStates[index] = button.pressed;
@@ -435,7 +458,6 @@
     window.addEventListener('gamepaddisconnected', () => {
       feedbackDisplay.textContent = 'Gamepad disconnected.';
     });
-
   </script>
 </body>
 </html>
