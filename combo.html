@@ -223,7 +223,7 @@
     const doneButton = document.getElementById('done');
     const cancelButton = document.getElementById('cancel');
     const selectedButtonsDisplay = document.getElementById('selected-buttons');
-    let inputBuffer = []; // Array to store pressed buttons with timestamps
+    let prevButtonStates = {}; // Object to store previous button states
 
     // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
@@ -274,7 +274,7 @@
       comboSequence.length = 0;
       currentComboIndex = 0; // Reset the index
       comboFailed = false;
-      inputBuffer = [];
+      prevButtonStates = {};
       comboAttempted = false;
       updateComboDisplay();
       resetFeedback();
@@ -338,15 +338,18 @@
     function refreshCombo() {
       currentComboIndex = 0;
       comboFailed = false;
-      inputBuffer = [];
+      prevButtonStates = {};
       resetFeedback();
       highlightNextStep();
     }
 
-    // Handle custom input for combo checks
-    function checkCustomInput(expectedInput, pressedButtons) {
-      const expectedButtons = expectedInput.split(' + '); // Split combined input
-      return expectedButtons.every(button => pressedButtons.includes(button)); // Check if all expected buttons are pressed
+    // Function to reset the combo when a new button is added after an attempt
+    function resetComboOnNewButton() {
+      currentComboIndex = 0;
+      comboFailed = false;
+      prevButtonStates = {};
+      resetFeedback();
+      highlightNextStep();
     }
 
     // Gamepad API logic
@@ -368,22 +371,27 @@
           15: 'forward' // D-pad Right
         };
 
-        const now = Date.now();
+        const newlyPressedButtons = [];
 
-        // Add pressed buttons to inputBuffer
+        // Initialize prevButtonStates if empty
+        if (Object.keys(prevButtonStates).length === 0) {
+          gamepad.buttons.forEach((button, index) => {
+            prevButtonStates[index] = button.pressed;
+          });
+        }
+
+        // Detect newly pressed buttons
         gamepad.buttons.forEach((button, index) => {
-          if (button.pressed && buttonMapping[index]) {
+          if (buttonMapping[index]) {
             const buttonName = buttonMapping[index];
-            // Check if the button is already in the buffer
-            if (!inputBuffer.some(entry => entry.button === buttonName)) {
-              // Add button to buffer with timestamp
-              inputBuffer.push({ button: buttonName, time: now });
+            if (button.pressed && !prevButtonStates[index]) {
+              // Button is newly pressed
+              newlyPressedButtons.push(buttonName);
             }
+            // Update prevButtonStates
+            prevButtonStates[index] = button.pressed;
           }
         });
-
-        // Remove old entries from buffer (older than 500ms)
-        inputBuffer = inputBuffer.filter(entry => now - entry.time <= 500);
 
         const expectedInput = comboSequence[currentComboIndex];
 
@@ -391,31 +399,21 @@
 
         if (expectedInput.includes(' + ')) {
           const expectedButtons = expectedInput.split(' + ');
-          const pressedButtons = inputBuffer.map(entry => entry.button);
-          isCorrect = expectedButtons.every(button => pressedButtons.includes(button));
+          isCorrect = expectedButtons.every(button => newlyPressedButtons.includes(button));
         } else {
-          const pressedButtons = inputBuffer.map(entry => entry.button);
-          isCorrect = pressedButtons.includes(expectedInput);
+          isCorrect = newlyPressedButtons.includes(expectedInput);
         }
 
         if (isCorrect) {
           showStepFeedback(currentComboIndex, true);
           currentComboIndex++;
           highlightNextStep();
-          inputBuffer = []; // Clear input buffer after correct input
           setAttemptingFeedback();
-        } else {
-          const expectedButtons = expectedInput.includes(' + ') ? expectedInput.split(' + ') : [expectedInput];
-          const pressedButtons = inputBuffer.map(entry => entry.button);
-          const unexpectedButtons = pressedButtons.filter(button => !expectedButtons.includes(button));
-
-          if (unexpectedButtons.length > 0) {
-            // Incorrect button pressed
-            comboFailed = true;
-            showStepFeedback(currentComboIndex, false);
-            showFinalFeedback(false);
-            inputBuffer = []; // Clear input buffer on failure
-          }
+        } else if (newlyPressedButtons.length > 0) {
+          // Incorrect button pressed
+          comboFailed = true;
+          showStepFeedback(currentComboIndex, false);
+          showFinalFeedback(false);
         }
 
         if (currentComboIndex === comboSequence.length && !comboFailed) {
@@ -437,15 +435,6 @@
     window.addEventListener('gamepaddisconnected', () => {
       feedbackDisplay.textContent = 'Gamepad disconnected.';
     });
-
-    // Function to reset the combo when a new button is added after an attempt
-    function resetComboOnNewButton() {
-      currentComboIndex = 0;
-      comboFailed = false;
-      inputBuffer = [];
-      resetFeedback();
-      highlightNextStep();
-    }
 
   </script>
 </body>
