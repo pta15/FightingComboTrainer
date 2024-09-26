@@ -56,6 +56,18 @@
       background-color: #555;
     }
 
+    /* Style for action buttons */
+    .combo-input-section button.action-button {
+      width: auto;
+      height: auto;
+      padding: 10px 15px;
+      font-size: 16px;
+    }
+
+    .combo-input-section button.action-button:hover {
+      background-color: #555;
+    }
+
     .combo-display {
       display: flex;
       justify-content: center;
@@ -233,9 +245,9 @@
       <h2>Select Your Combo Inputs:</h2>
       <!-- Buttons will be dynamically generated -->
       <div id="combo-buttons"></div>
-      <button id="reset">Reset Combo</button>
-      <button id="refresh">Refresh Combo</button>
-      <button id="custom-input">Custom Input</button>
+      <button id="reset" class="action-button">Reset Combo</button>
+      <button id="refresh" class="action-button">Refresh Combo</button>
+      <button id="custom-input" class="action-button">Custom Input</button>
     </div>
 
     <!-- Combo Display Section -->
@@ -261,8 +273,8 @@
       <br><br>
       <div id="selected-buttons">Selected: None</div>
       <br>
-      <button id="done">Done</button>
-      <button id="cancel">Cancel</button>
+      <button id="done" class="action-button">Done</button>
+      <button id="cancel" class="action-button">Cancel</button>
     </div>
   </div>
 
@@ -303,7 +315,7 @@
           { input: 'down', label: '↓', index: 13 },
           { input: 'back', label: '←', index: 14 },
           { input: 'forward', label: '→', index: 15 },
-          { input: 'touchpad', label: 'Touchpad', index: 17 },
+          // Removed touchpad button from inputs
         ],
         nameToIcon: {
           'triangle': '△',
@@ -320,7 +332,7 @@
           'down': '↓',
           'back': '←',
           'forward': '→',
-          'touchpad': 'Touchpad',
+          // Removed touchpad
         }
       },
       xbox: {
@@ -340,8 +352,7 @@
           { input: 'down', label: '↓', index: 13 },
           { input: 'left', label: '←', index: 14 },
           { input: 'right', label: '→', index: 15 },
-          { input: 'view', label: 'View', index: 8 },
-          { input: 'menu', label: 'Menu', index: 9 },
+          // Removed view and menu buttons
         ],
         nameToIcon: {
           'y': 'Y',
@@ -358,21 +369,25 @@
           'down': '↓',
           'left': '←',
           'right': '→',
-          'view': 'View',
-          'menu': 'Menu',
+          // Removed view and menu
         }
       },
       tekken: {
         name: 'Tekken Notation',
         buttons: [
-          { input: '1', label: '1', index: null },
-          { input: '2', label: '2', index: null },
-          { input: '3', label: '3', index: null },
-          { input: '4', label: '4', index: null },
-          { input: 'f', label: 'f', index: null },
-          { input: 'd', label: 'd', index: null },
-          { input: 'b', label: 'b', index: null },
-          { input: 'u', label: 'u', index: null },
+          { input: '1', label: '1', index: null }, // Left Punch
+          { input: '2', label: '2', index: null }, // Right Punch
+          { input: '3', label: '3', index: null }, // Left Kick
+          { input: '4', label: '4', index: null }, // Right Kick
+          { input: 'f', label: 'f', index: null }, // Forward
+          { input: 'd', label: 'd', index: null }, // Down
+          { input: 'b', label: 'b', index: null }, // Back
+          { input: 'u', label: 'u', index: null }, // Up
+          { input: 'df', label: 'df', index: null },
+          { input: 'db', label: 'db', index: null },
+          { input: 'uf', label: 'uf', index: null },
+          { input: 'ub', label: 'ub', index: null },
+          { input: 'n', label: 'n', index: null }, // Neutral
         ],
         nameToIcon: {
           '1': '1',
@@ -383,6 +398,11 @@
           'd': 'd',
           'b': 'b',
           'u': 'u',
+          'df': 'df',
+          'db': 'db',
+          'uf': 'uf',
+          'ub': 'ub',
+          'n': 'n',
         }
       },
       numpad: {
@@ -632,7 +652,7 @@
             const { name } = buttonMapping[index];
             if (button.pressed && !prevButtonStates[index]) {
               // Button is newly pressed
-              if (name === 'touchpad' || name === 'view') {
+              if (name === 'touchpad') {
                 refreshCombo();
               } else {
                 newlyPressedButtons.push(name);
