@@ -153,6 +153,12 @@
     #modal-content button:hover {
       background-color: #555;
     }
+
+    #selected-buttons {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
   </style>
 </head>
 <body>
@@ -200,6 +206,8 @@
       <button data-input="up" class="direction">↑</button>
       <button data-input="down" class="direction">↓</button>
       <br><br>
+      <div id="selected-buttons">Selected: None</div>
+      <br>
       <button id="done">Done</button>
       <button id="cancel">Cancel</button>
     </div>
@@ -217,6 +225,7 @@
     const modal = document.getElementById('modal');
     const doneButton = document.getElementById('done');
     const cancelButton = document.getElementById('cancel');
+    const selectedButtonsDisplay = document.getElementById('selected-buttons');
 
     // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
@@ -234,6 +243,7 @@
     document.getElementById('custom-input').addEventListener('click', () => {
       modal.style.display = 'block';
       customInputSelections = []; // Reset selections
+      selectedButtonsDisplay.textContent = 'Selected: None';
     });
 
     // Select buttons inside the modal
@@ -242,6 +252,7 @@
         const input = button.getAttribute('data-input');
         if (!customInputSelections.includes(input)) {
           customInputSelections.push(input); // Add selected input to custom input array
+          selectedButtonsDisplay.textContent = `Selected: ${customInputSelections.join(' + ')}`; // Display selected buttons
         }
       });
     });
@@ -325,6 +336,12 @@
       comboAttempted = true; // Mark the combo as attempted
     }
 
+    // Handle custom input for combo checks
+    function checkCustomInput(expectedInput, pressedButtons) {
+      const expectedButtons = expectedInput.split(' + '); // Split combined input
+      return expectedButtons.every(button => pressedButtons.includes(button)); // Check if all expected buttons are pressed
+    }
+
     // Gamepad API logic
     let gamepadIndex;
 
@@ -344,47 +361,43 @@
           15: 'forward' // D-pad Right
         };
 
+        const pressedButtons = []; // Track pressed buttons
+
         // Debounce: Process the input once per button press
         if (!inputProcessed) {
           gamepad.buttons.forEach((button, index) => {
             if (button.pressed && buttonMapping[index]) {
-              checkInput(buttonMapping[index]);
-              inputProcessed = true; // Prevent repeated input
-              setTimeout(() => { inputProcessed = false; }, 300); // Allow input again after a short delay
+              pressedButtons.push(buttonMapping[index]); // Add pressed button to array
             }
           });
+
+          // Check the input (including custom combined inputs)
+          const expectedInput = comboSequence[currentComboIndex];
+          const isCorrect = expectedInput.includes(' + ')
+            ? checkCustomInput(expectedInput, pressedButtons)
+            : pressedButtons.includes(expectedInput);
+
+          if (isCorrect) {
+            showStepFeedback(currentComboIndex, true); // Highlight the correct step in green
+            currentComboIndex++; // Move to the next step
+            highlightNextStep(); // Highlight the next step in yellow
+          } else {
+            comboFailed = true;
+            showStepFeedback(currentComboIndex, false); // Highlight incorrect input in red
+            showFinalFeedback(false); // Mark the combo as failed
+          }
+
+          if (currentComboIndex === comboSequence.length && !comboFailed) {
+            showFinalFeedback(true); // Combo completed successfully
+            setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
+          }
+
+          inputProcessed = true; // Prevent repeated input
+          setTimeout(() => { inputProcessed = false; }, 300); // Allow input again after a short delay
         }
       }
 
       requestAnimationFrame(pollGamepad);
-    }
-
-    function checkInput(input) {
-      if (currentComboIndex >= comboSequence.length || comboFailed) return;
-
-      // Start from the first step once the first input is detected
-      if (currentComboIndex === -1) {
-        currentComboIndex = 0;
-        setAttemptingFeedback(); // Display "Combo Attempting" message
-      }
-
-      const expectedInput = comboSequence[currentComboIndex];
-      const isCorrect = input === expectedInput;
-
-      if (isCorrect) {
-        showStepFeedback(currentComboIndex, true); // Highlight the correct step in green
-        currentComboIndex++; // Move to the next step
-        highlightNextStep(); // Highlight the next step in yellow
-      } else {
-        comboFailed = true;
-        showStepFeedback(currentComboIndex, false); // Highlight incorrect input in red
-        showFinalFeedback(false); // Mark the combo as failed
-      }
-
-      if (currentComboIndex === comboSequence.length && !comboFailed) {
-        showFinalFeedback(true); // Combo completed successfully
-        setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
-      }
     }
 
     window.addEventListener('gamepadconnected', (event) => {
