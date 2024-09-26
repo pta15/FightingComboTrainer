@@ -44,7 +44,7 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 20px;
     }
 
     .combo-input-section button:hover {
@@ -106,6 +106,15 @@
       color: orange;
     }
 
+    .icon {
+      font-size: 20px;
+      vertical-align: middle;
+    }
+
+    .direction {
+      font-size: 24px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -115,14 +124,14 @@
     <!-- Combo Input Section -->
     <div class="combo-input-section">
       <h2>Select Your Combo Inputs:</h2>
-      <button data-input="triangle">Triangle</button>
-      <button data-input="square">Square</button>
-      <button data-input="circle">Circle</button>
-      <button data-input="x">X</button>
-      <button data-input="forward">Forward</button>
-      <button data-input="back">Back</button>
-      <button data-input="up">Up</button>
-      <button data-input="down">Down</button>
+      <button data-input="triangle" class="icon">△</button>
+      <button data-input="square" class="icon">◻</button>
+      <button data-input="circle" class="icon">◯</button>
+      <button data-input="x" class="icon">✕</button>
+      <button data-input="forward" class="direction">→</button>
+      <button data-input="back" class="direction">←</button>
+      <button data-input="up" class="direction">↑</button>
+      <button data-input="down" class="direction">↓</button>
       <button id="reset">Reset Combo</button>
       <button id="refresh">Refresh Combo</button>
     </div>
@@ -144,6 +153,7 @@
     let currentComboIndex = -1; // Start with -1 to avoid highlighting the first step prematurely
     let comboFailed = false; // Track if the combo has failed
     let inputProcessed = false; // Debounce mechanism to prevent repeated input
+    let comboAttempted = false; // Track if the combo was attempted before adding a new button
     const comboDisplay = document.getElementById('combo-sequence');
     const feedbackDisplay = document.getElementById('controller-feedback');
 
@@ -152,7 +162,9 @@
       button.addEventListener('click', () => {
         const input = button.getAttribute('data-input');
         comboSequence.push(input);
-        resetComboOnNewButton(); // Reset the combo when a new button is added
+        if (comboAttempted) {
+          resetComboOnNewButton(); // Reset the combo when a new button is added after the attempt
+        }
         updateComboDisplay();
       });
     });
@@ -162,6 +174,7 @@
       currentComboIndex = -1; // Reset the index
       comboFailed = false;
       inputProcessed = false;
+      comboAttempted = false;
       updateComboDisplay();
       resetFeedback();
     });
@@ -170,11 +183,12 @@
       currentComboIndex = -1; // Reset the index
       comboFailed = false;
       inputProcessed = false;
+      comboAttempted = false;
       updateComboDisplay();
       resetFeedback();
     });
 
-    // Resets the combo progress when a new button is added
+    // Resets the combo progress when a new button is added after the combo is attempted
     function resetComboOnNewButton() {
       currentComboIndex = -1; // Reset progress
       comboFailed = false;
@@ -187,10 +201,25 @@
         comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
       } else {
         comboDisplay.innerHTML = comboSequence.map((step, index) =>
-          `<span class="combo-step" id="step-${index}">${step}</span>`
+          `<span class="combo-step" id="step-${index}">${convertInputToIcon(step)}</span>`
         ).join('');
       }
       highlightNextStep();
+    }
+
+    // Convert inputs to PlayStation icons or arrows for display
+    function convertInputToIcon(input) {
+      const iconMapping = {
+        'triangle': '△',
+        'square': '◻',
+        'circle': '◯',
+        'x': '✕',
+        'forward': '→',
+        'back': '←',
+        'up': '↑',
+        'down': '↓'
+      };
+      return iconMapping[input] || input;
     }
 
     function highlightNextStep() {
@@ -229,6 +258,7 @@
     function setAttemptingFeedback() {
       feedbackDisplay.textContent = 'Combo Attempting...';
       feedbackDisplay.classList.add('attempting');
+      comboAttempted = true; // Mark the combo as attempted
     }
 
     // Show a message when the combo is restarted due to a new button addition
