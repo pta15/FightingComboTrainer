@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fighting Game Combo Trainer</title>
   <style>
     body {
@@ -158,7 +157,6 @@
       margin-top: 10px;
       font-size: 16px;
     }
-
   </style>
 </head>
 <body>
@@ -215,9 +213,8 @@
 
   <script>
     const comboSequence = [];
-    let currentComboIndex = -1; // Start with -1 to avoid highlighting the first step prematurely
+    let currentComboIndex = 0; // Start with 0
     let comboFailed = false; // Track if the combo has failed
-    let inputProcessed = false; // Debounce mechanism to prevent repeated input
     let comboAttempted = false; // Track if the combo was attempted before adding a new button
     let customInputSelections = []; // Track the selected buttons for custom input
     const comboDisplay = document.getElementById('combo-sequence');
@@ -226,6 +223,7 @@
     const doneButton = document.getElementById('done');
     const cancelButton = document.getElementById('cancel');
     const selectedButtonsDisplay = document.getElementById('selected-buttons');
+    let inputBuffer = []; // Array to store pressed buttons with timestamps
 
     // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
@@ -274,9 +272,9 @@
 
     document.getElementById('reset').addEventListener('click', () => {
       comboSequence.length = 0;
-      currentComboIndex = -1; // Reset the index
+      currentComboIndex = 0; // Reset the index
       comboFailed = false;
-      inputProcessed = false;
+      inputBuffer = [];
       comboAttempted = false;
       updateComboDisplay();
       resetFeedback();
@@ -304,7 +302,7 @@
       });
 
       // Highlight the next expected input if we are still within the combo
-      if (currentComboIndex < comboSequence.length && currentComboIndex >= 0 && !comboFailed) {
+      if (currentComboIndex < comboSequence.length && !comboFailed) {
         document.getElementById(`step-${currentComboIndex}`).classList.add('next-step');
       }
     }
@@ -328,12 +326,21 @@
       feedbackDisplay.textContent = isSuccess ? 'Combo Successful!' : 'Combo Failed!';
       feedbackDisplay.classList.remove('attempting');
       feedbackDisplay.classList.add(isSuccess ? 'green' : 'red');
+      comboAttempted = false; // Reset combo attempt status
     }
 
     function setAttemptingFeedback() {
       feedbackDisplay.textContent = 'Combo Attempting...';
       feedbackDisplay.classList.add('attempting');
       comboAttempted = true; // Mark the combo as attempted
+    }
+
+    function refreshCombo() {
+      currentComboIndex = 0;
+      comboFailed = false;
+      inputBuffer = [];
+      resetFeedback();
+      highlightNextStep();
     }
 
     // Handle custom input for combo checks
@@ -361,39 +368,59 @@
           15: 'forward' // D-pad Right
         };
 
-        const pressedButtons = []; // Track pressed buttons
+        const now = Date.now();
 
-        // Debounce: Process the input once per button press
-        if (!inputProcessed) {
-          gamepad.buttons.forEach((button, index) => {
-            if (button.pressed && buttonMapping[index]) {
-              pressedButtons.push(buttonMapping[index]); // Add pressed button to array
+        // Add pressed buttons to inputBuffer
+        gamepad.buttons.forEach((button, index) => {
+          if (button.pressed && buttonMapping[index]) {
+            const buttonName = buttonMapping[index];
+            // Check if the button is already in the buffer
+            if (!inputBuffer.some(entry => entry.button === buttonName)) {
+              // Add button to buffer with timestamp
+              inputBuffer.push({ button: buttonName, time: now });
             }
-          });
+          }
+        });
 
-          // Check the input (including custom combined inputs)
-          const expectedInput = comboSequence[currentComboIndex];
-          const isCorrect = expectedInput.includes(' + ')
-            ? checkCustomInput(expectedInput, pressedButtons)
-            : pressedButtons.includes(expectedInput);
+        // Remove old entries from buffer (older than 500ms)
+        inputBuffer = inputBuffer.filter(entry => now - entry.time <= 500);
 
-          if (isCorrect) {
-            showStepFeedback(currentComboIndex, true); // Highlight the correct step in green
-            currentComboIndex++; // Move to the next step
-            highlightNextStep(); // Highlight the next step in yellow
-          } else {
+        const expectedInput = comboSequence[currentComboIndex];
+
+        let isCorrect = false;
+
+        if (expectedInput.includes(' + ')) {
+          const expectedButtons = expectedInput.split(' + ');
+          const pressedButtons = inputBuffer.map(entry => entry.button);
+          isCorrect = expectedButtons.every(button => pressedButtons.includes(button));
+        } else {
+          const pressedButtons = inputBuffer.map(entry => entry.button);
+          isCorrect = pressedButtons.includes(expectedInput);
+        }
+
+        if (isCorrect) {
+          showStepFeedback(currentComboIndex, true);
+          currentComboIndex++;
+          highlightNextStep();
+          inputBuffer = []; // Clear input buffer after correct input
+          setAttemptingFeedback();
+        } else {
+          const expectedButtons = expectedInput.includes(' + ') ? expectedInput.split(' + ') : [expectedInput];
+          const pressedButtons = inputBuffer.map(entry => entry.button);
+          const unexpectedButtons = pressedButtons.filter(button => !expectedButtons.includes(button));
+
+          if (unexpectedButtons.length > 0) {
+            // Incorrect button pressed
             comboFailed = true;
-            showStepFeedback(currentComboIndex, false); // Highlight incorrect input in red
-            showFinalFeedback(false); // Mark the combo as failed
+            showStepFeedback(currentComboIndex, false);
+            showFinalFeedback(false);
+            inputBuffer = []; // Clear input buffer on failure
           }
+        }
 
-          if (currentComboIndex === comboSequence.length && !comboFailed) {
-            showFinalFeedback(true); // Combo completed successfully
-            setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
-          }
-
-          inputProcessed = true; // Prevent repeated input
-          setTimeout(() => { inputProcessed = false; }, 300); // Allow input again after a short delay
+        if (currentComboIndex === comboSequence.length && !comboFailed) {
+          showFinalFeedback(true);
+          setTimeout(refreshCombo, 1000);
         }
       }
 
@@ -410,6 +437,15 @@
     window.addEventListener('gamepaddisconnected', () => {
       feedbackDisplay.textContent = 'Gamepad disconnected.';
     });
+
+    // Function to reset the combo when a new button is added after an attempt
+    function resetComboOnNewButton() {
+      currentComboIndex = 0;
+      comboFailed = false;
+      inputBuffer = [];
+      resetFeedback();
+      highlightNextStep();
+    }
 
   </script>
 </body>
