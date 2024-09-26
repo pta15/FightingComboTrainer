@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fighting Game Combo Trainer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #222;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00ff00;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .combo-input-section,
+    .combo-display,
+    .controller-input-section {
+      margin: 20px 0;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 10px;
+    }
+
+    .combo-input-section {
+      text-align: center;
+    }
+
+    .combo-input-section button {
+      background-color: #444;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .combo-input-section button:hover {
+      background-color: #555;
+    }
+
+    .combo-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      min-height: 60px;
+      background-color: #444;
+    }
+
+    .combo-step {
+      margin: 0 10px;
+      padding: 5px 10px;
+      border: 2px solid #888;
+      border-radius: 5px;
+    }
+
+    .controller-input-section {
+      text-align: center;
+    }
+
+    .feedback {
+      font-size: 24px;
+      padding: 10px;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    .feedback.green {
+      color: limegreen;
+    }
+
+    .feedback.red {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fighting Game Combo Trainer</h1>
+
+    <!-- Combo Input Section -->
+    <div class="combo-input-section">
+      <h2>Select Your Combo Inputs:</h2>
+      <button data-input="triangle">Triangle</button>
+      <button data-input="square">Square</button>
+      <button data-input="circle">Circle</button>
+      <button data-input="x">X</button>
+      <button data-input="forward">Forward</button>
+      <button data-input="back">Back</button>
+      <button data-input="up">Up</button>
+      <button data-input="down">Down</button>
+      <button id="reset">Reset Combo</button>
+    </div>
+
+    <!-- Combo Display Section -->
+    <div class="combo-display">
+      <div id="combo-sequence">Your Combo Sequence Will Appear Here</div>
+    </div>
+
+    <!-- Controller Input Section -->
+    <div class="controller-input-section">
+      <h2>Controller Input:</h2>
+      <div id="controller-feedback" class="feedback">Press Buttons...</div>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript to manage combo creation and feedback
+
+    const comboSequence = [];
+    const comboDisplay = document.getElementById('combo-sequence');
+    const feedbackDisplay = document.getElementById('controller-feedback');
+    
+    document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
+      button.addEventListener('click', () => {
+        const input = button.getAttribute('data-input');
+        comboSequence.push(input);
+        updateComboDisplay();
+      });
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      comboSequence.length = 0;
+      updateComboDisplay();
+    });
+
+    function updateComboDisplay() {
+      if (comboSequence.length === 0) {
+        comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
+      } else {
+        comboDisplay.innerHTML = comboSequence.map(step => `<span class="combo-step">${step}</span>`).join('');
+      }
+    }
+
+    // Example for feedback
+    function showFeedback(isCorrect) {
+      feedbackDisplay.textContent = isCorrect ? 'Correct Input!' : 'Incorrect Input!';
+      feedbackDisplay.classList.remove('green', 'red');
+      feedbackDisplay.classList.add(isCorrect ? 'green' : 'red');
+    }
+
+    // Simulate correct or incorrect input feedback (to be replaced with actual controller input logic)
+    setInterval(() => {
+      const isCorrect = Math.random() > 0.5;
+      showFeedback(isCorrect);
+    }, 2000);
+
+  </script>
+</body>
+</html>
