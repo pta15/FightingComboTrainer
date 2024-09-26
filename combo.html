@@ -101,6 +101,11 @@
     .feedback.red {
       color: red;
     }
+
+    .feedback.attempting {
+      color: orange;
+    }
+
   </style>
 </head>
 <body>
@@ -136,7 +141,9 @@
 
   <script>
     const comboSequence = [];
-    let currentComboIndex = 0; // Track the current position in the combo
+    let currentComboIndex = -1; // Start with -1 to avoid highlighting the first step prematurely
+    let comboFailed = false; // Track if the combo has failed
+    let inputProcessed = false; // Debounce mechanism to prevent repeated input
     const comboDisplay = document.getElementById('combo-sequence');
     const feedbackDisplay = document.getElementById('controller-feedback');
 
@@ -151,13 +158,17 @@
 
     document.getElementById('reset').addEventListener('click', () => {
       comboSequence.length = 0;
-      currentComboIndex = 0;
+      currentComboIndex = -1; // Reset the index
+      comboFailed = false;
+      inputProcessed = false;
       updateComboDisplay();
       resetFeedback();
     });
 
     document.getElementById('refresh').addEventListener('click', () => {
-      currentComboIndex = 0;
+      currentComboIndex = -1; // Reset the index
+      comboFailed = false;
+      inputProcessed = false;
       updateComboDisplay();
       resetFeedback();
     });
@@ -179,14 +190,15 @@
         document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect', 'next-step');
       });
 
-      // Highlight the next expected input
-      if (currentComboIndex < comboSequence.length) {
+      // Highlight the next expected input if we are still within the combo
+      if (currentComboIndex < comboSequence.length && currentComboIndex >= 0 && !comboFailed) {
         document.getElementById(`step-${currentComboIndex}`).classList.add('next-step');
       }
     }
 
     function resetFeedback() {
       feedbackDisplay.textContent = 'Press Buttons...';
+      feedbackDisplay.classList.remove('green', 'red', 'attempting');
       comboSequence.forEach((_, index) => {
         document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect', 'next-step');
       });
@@ -200,9 +212,14 @@
     }
 
     function showFinalFeedback(isSuccess) {
-      feedbackDisplay.textContent = isSuccess ? 'Combo Completed!' : 'Combo Failed!';
-      feedbackDisplay.classList.remove('green', 'red');
+      feedbackDisplay.textContent = isSuccess ? 'Combo Successful!' : 'Combo Failed!';
+      feedbackDisplay.classList.remove('attempting');
       feedbackDisplay.classList.add(isSuccess ? 'green' : 'red');
+    }
+
+    function setAttemptingFeedback() {
+      feedbackDisplay.textContent = 'Combo Attempting...';
+      feedbackDisplay.classList.add('attempting');
     }
 
     // Gamepad API logic
@@ -212,7 +229,7 @@
       const gamepads = navigator.getGamepads();
       const gamepad = gamepads[gamepadIndex];
 
-      if (gamepad && currentComboIndex < comboSequence.length) {
+      if (gamepad && currentComboIndex < comboSequence.length && !comboFailed) {
         const buttonMapping = {
           0: 'x',       // X button
           1: 'circle',  // Circle button
@@ -224,33 +241,45 @@
           15: 'forward' // D-pad Right
         };
 
-        gamepad.buttons.forEach((button, index) => {
-          if (button.pressed && buttonMapping[index]) {
-            checkInput(buttonMapping[index]);
-          }
-        });
+        // Debounce: Process the input once per button press
+        if (!inputProcessed) {
+          gamepad.buttons.forEach((button, index) => {
+            if (button.pressed && buttonMapping[index]) {
+              checkInput(buttonMapping[index]);
+              inputProcessed = true; // Prevent repeated input
+              setTimeout(() => { inputProcessed = false; }, 300); // Allow input again after a short delay
+            }
+          });
+        }
       }
 
       requestAnimationFrame(pollGamepad);
     }
 
     function checkInput(input) {
-      if (currentComboIndex >= comboSequence.length) return;
+      if (currentComboIndex >= comboSequence.length || comboFailed) return;
+
+      // Start from the first step once the first input is detected
+      if (currentComboIndex === -1) {
+        currentComboIndex = 0;
+        setAttemptingFeedback(); // Display "Combo Attempting" message
+      }
 
       const expectedInput = comboSequence[currentComboIndex];
       const isCorrect = input === expectedInput;
 
-      showStepFeedback(currentComboIndex, isCorrect);
-
       if (isCorrect) {
-        currentComboIndex++;
-        highlightNextStep();
+        showStepFeedback(currentComboIndex, true); // Highlight the correct step in green
+        currentComboIndex++; // Move to the next step
+        highlightNextStep(); // Highlight the next step in yellow
+      } else {
+        comboFailed = true;
+        showStepFeedback(currentComboIndex, false); // Highlight incorrect input in red
+        showFinalFeedback(false); // Mark the combo as failed
       }
 
-      if (currentComboIndex === comboSequence.length) {
-        showFinalFeedback(true);
-      } else if (!isCorrect) {
-        showFinalFeedback(false);
+      if (currentComboIndex === comboSequence.length && !comboFailed) {
+        showFinalFeedback(true); // Combo completed successfully
       }
     }
 
