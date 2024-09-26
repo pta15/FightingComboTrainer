@@ -4,7 +4,8 @@
   <meta charset="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fighting Game Combo Trainer</title>
   <style>
-    /* Your original CSS styles remain unchanged */
+    /* Existing styles remain the same */
+
     body {
       font-family: Arial, sans-serif;
       background-color: #222;
@@ -58,14 +59,16 @@
       font-size: 20px;
       min-height: 60px;
       background-color: #444;
+      flex-wrap: wrap; /* Allow wrapping if necessary */
     }
 
     .combo-step {
-      margin: 0 10px;
+      margin: 5px 5px; /* Adjusted margins for better alignment */
       padding: 5px 10px;
       border: 2px solid #888;
       border-radius: 5px;
       display: inline-block;
+      vertical-align: middle; /* Ensures alignment */
     }
 
     .correct {
@@ -116,6 +119,31 @@
       vertical-align: middle;
     }
 
+    /* Touchpad Icon Styling */
+    .icon.touchpad-icon {
+      display: inline-block;
+      width: 30px;
+      height: 20px;
+      background-color: #444;
+      border: 2px solid #888;
+      border-radius: 4px;
+      vertical-align: middle;
+      position: relative;
+      margin: 0 5px;
+    }
+
+    .icon.touchpad-icon::after {
+      content: '';
+      display: block;
+      width: 14px;
+      height: 2px;
+      background-color: #888;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
     /* Modal Styling */
     #modal {
       display: none;
@@ -158,6 +186,47 @@
       margin-top: 10px;
       font-size: 16px;
     }
+
+    /* Tooltip Styling */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 220px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above the icon */
+      left: 50%;
+      margin-left: -110px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%; /* At the bottom of the tooltip */
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
   </style>
 </head>
 <body>
@@ -189,6 +258,9 @@
     <div class="controller-input-section">
       <h2>Controller Input:</h2>
       <div id="controller-feedback" class="feedback">Press Buttons...</div>
+      <div class="refresh-info">
+        Press the <span class="icon touchpad-icon" title="Touchpad button"></span> Touchpad button to refresh the combo.
+      </div>
     </div>
   </div>
 
@@ -235,7 +307,8 @@
       12: {name: 'up', icon: '↑'},     // D-pad Up
       13: {name: 'down', icon: '↓'},   // D-pad Down
       14: {name: 'back', icon: '←'},   // D-pad Left
-      15: {name: 'forward', icon: '→'} // D-pad Right
+      15: {name: 'forward', icon: '→'}, // D-pad Right
+      17: {name: 'touchpad', icon: 'Touchpad'} // Touchpad button
     };
 
     // Mapping of internal names to icons
@@ -247,7 +320,8 @@
       'up': '↑',
       'down': '↓',
       'back': '←',
-      'forward': '→'
+      'forward': '→',
+      'touchpad': 'Touchpad'
     };
 
     // Adding combo inputs
@@ -392,8 +466,7 @@
       const gamepads = navigator.getGamepads();
       const gamepad = gamepads[gamepadIndex];
 
-      if (gamepad && currentComboIndex < comboSequence.length && !comboFailed) {
-
+      if (gamepad) {
         const newlyPressedButtons = [];
 
         // Initialize prevButtonStates if empty
@@ -409,39 +482,45 @@
             const {name} = buttonMapping[index];
             if (button.pressed && !prevButtonStates[index]) {
               // Button is newly pressed
-              newlyPressedButtons.push(name);
+              if (name === 'touchpad') {
+                refreshCombo();
+              } else {
+                newlyPressedButtons.push(name);
+              }
             }
             // Update prevButtonStates
             prevButtonStates[index] = button.pressed;
           }
         });
 
-        const expectedInput = comboSequence[currentComboIndex];
+        if (currentComboIndex < comboSequence.length && !comboFailed) {
+          const expectedInput = comboSequence[currentComboIndex];
 
-        let isCorrect = false;
+          let isCorrect = false;
 
-        if (expectedInput.includes(' + ')) {
-          const expectedButtons = expectedInput.split(' + ');
-          isCorrect = expectedButtons.every(button => newlyPressedButtons.includes(button));
-        } else {
-          isCorrect = newlyPressedButtons.includes(expectedInput);
-        }
+          if (expectedInput.includes(' + ')) {
+            const expectedButtons = expectedInput.split(' + ');
+            isCorrect = expectedButtons.every(button => newlyPressedButtons.includes(button));
+          } else {
+            isCorrect = newlyPressedButtons.includes(expectedInput);
+          }
 
-        if (isCorrect) {
-          showStepFeedback(currentComboIndex, true);
-          currentComboIndex++;
-          highlightNextStep();
-          setAttemptingFeedback();
-        } else if (newlyPressedButtons.length > 0) {
-          // Incorrect button pressed
-          comboFailed = true;
-          showStepFeedback(currentComboIndex, false);
-          showFinalFeedback(false);
-        }
+          if (isCorrect) {
+            showStepFeedback(currentComboIndex, true);
+            currentComboIndex++;
+            highlightNextStep();
+            setAttemptingFeedback();
+          } else if (newlyPressedButtons.length > 0) {
+            // Incorrect button pressed
+            comboFailed = true;
+            showStepFeedback(currentComboIndex, false);
+            showFinalFeedback(false);
+          }
 
-        if (currentComboIndex === comboSequence.length && !comboFailed) {
-          showFinalFeedback(true);
-          setTimeout(refreshCombo, 1000);
+          if (currentComboIndex === comboSequence.length && !comboFailed) {
+            showFinalFeedback(true);
+            setTimeout(refreshCombo, 1000);
+          }
         }
       }
 
