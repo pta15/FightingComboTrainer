@@ -65,6 +65,17 @@
       padding: 5px 10px;
       border: 2px solid #888;
       border-radius: 5px;
+      display: inline-block;
+    }
+
+    .correct {
+      border-color: limegreen;
+      color: limegreen;
+    }
+
+    .incorrect {
+      border-color: red;
+      color: red;
     }
 
     .controller-input-section {
@@ -118,12 +129,12 @@
   </div>
 
   <script>
-    // JavaScript to manage combo creation and feedback
-
     const comboSequence = [];
+    let currentComboIndex = 0; // Track the current position in the combo
     const comboDisplay = document.getElementById('combo-sequence');
     const feedbackDisplay = document.getElementById('controller-feedback');
-    
+
+    // Adding combo inputs
     document.querySelectorAll('.combo-input-section button[data-input]').forEach(button => {
       button.addEventListener('click', () => {
         const input = button.getAttribute('data-input');
@@ -134,15 +145,38 @@
 
     document.getElementById('reset').addEventListener('click', () => {
       comboSequence.length = 0;
+      currentComboIndex = 0;
       updateComboDisplay();
+      resetFeedback();
     });
 
     function updateComboDisplay() {
       if (comboSequence.length === 0) {
         comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
       } else {
-        comboDisplay.innerHTML = comboSequence.map(step => `<span class="combo-step">${step}</span>`).join('');
+        comboDisplay.innerHTML = comboSequence.map((step, index) => 
+          `<span class="combo-step" id="step-${index}">${step}</span>`
+        ).join('');
       }
+    }
+
+    function resetFeedback() {
+      feedbackDisplay.textContent = 'Press Buttons...';
+      comboSequence.forEach((_, index) => {
+        document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect');
+      });
+    }
+
+    function showStepFeedback(index, isCorrect) {
+      const stepElement = document.getElementById(`step-${index}`);
+      stepElement.classList.remove('correct', 'incorrect');
+      stepElement.classList.add(isCorrect ? 'correct' : 'incorrect');
+    }
+
+    function showFinalFeedback(isSuccess) {
+      feedbackDisplay.textContent = isSuccess ? 'Combo Completed!' : 'Combo Failed!';
+      feedbackDisplay.classList.remove('green', 'red');
+      feedbackDisplay.classList.add(isSuccess ? 'green' : 'red');
     }
 
     // Gamepad API logic
@@ -152,8 +186,7 @@
       const gamepads = navigator.getGamepads();
       const gamepad = gamepads[gamepadIndex];
 
-      if (gamepad) {
-        // Map controller buttons to combo inputs (simplified mapping for example purposes)
+      if (gamepad && currentComboIndex < comboSequence.length) {
         const buttonMapping = {
           0: 'x',       // X button
           1: 'circle',  // Circle button
@@ -171,33 +204,33 @@
           }
         });
       }
+
       requestAnimationFrame(pollGamepad);
     }
 
     function checkInput(input) {
-      if (comboSequence.length === 0) return;
+      if (currentComboIndex >= comboSequence.length) return;
 
-      // Check if the input matches the next in the combo sequence
-      const expectedInput = comboSequence.shift(); // Get the first input from the combo
+      const expectedInput = comboSequence[currentComboIndex];
+      const isCorrect = input === expectedInput;
 
-      if (input === expectedInput) {
-        showFeedback(true);
-      } else {
-        showFeedback(false);
+      showStepFeedback(currentComboIndex, isCorrect);
+
+      if (isCorrect) {
+        currentComboIndex++;
       }
 
-      updateComboDisplay();
-    }
-
-    function showFeedback(isCorrect) {
-      feedbackDisplay.textContent = isCorrect ? 'Correct Input!' : 'Incorrect Input!';
-      feedbackDisplay.classList.remove('green', 'red');
-      feedbackDisplay.classList.add(isCorrect ? 'green' : 'red');
+      if (currentComboIndex === comboSequence.length) {
+        showFinalFeedback(true);
+      } else if (!isCorrect) {
+        showFinalFeedback(false);
+      }
     }
 
     window.addEventListener('gamepadconnected', (event) => {
       gamepadIndex = event.gamepad.index;
       feedbackDisplay.textContent = 'Gamepad connected!';
+      resetFeedback();
       pollGamepad(); // Start polling for inputs
     });
 
