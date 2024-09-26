@@ -180,12 +180,7 @@
     });
 
     document.getElementById('refresh').addEventListener('click', () => {
-      currentComboIndex = -1; // Reset the index
-      comboFailed = false;
-      inputProcessed = false;
-      comboAttempted = false;
-      updateComboDisplay();
-      resetFeedback();
+      refreshCombo(); // Call the refresh function to manually reset
     });
 
     // Resets the combo progress when a new button is added after the combo is attempted
@@ -267,6 +262,15 @@
       feedbackDisplay.classList.remove('green', 'red', 'attempting');
     }
 
+    // Automatically refresh the combo after a successful attempt
+    function refreshCombo() {
+      currentComboIndex = -1; // Reset the index to start again
+      comboFailed = false;
+      inputProcessed = false;
+      resetFeedback(); // Reset the feedback and combo display
+      highlightNextStep(); // Highlight the first step again
+    }
+
     // Gamepad API logic
     let gamepadIndex;
 
@@ -325,6 +329,7 @@
 
       if (currentComboIndex === comboSequence.length && !comboFailed) {
         showFinalFeedback(true); // Combo completed successfully
+        setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
       }
     }
 
