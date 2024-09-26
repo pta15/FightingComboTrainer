@@ -154,6 +154,7 @@
     let comboFailed = false; // Track if the combo has failed
     let inputProcessed = false; // Debounce mechanism to prevent repeated input
     let comboAttempted = false; // Track if the combo was attempted before adding a new button
+    let startTime = null; // Track the time the combo started
     const comboDisplay = document.getElementById('combo-sequence');
     const feedbackDisplay = document.getElementById('controller-feedback');
 
@@ -175,6 +176,7 @@
       comboFailed = false;
       inputProcessed = false;
       comboAttempted = false;
+      startTime = null; // Reset the start time
       updateComboDisplay();
       resetFeedback();
     });
@@ -188,6 +190,7 @@
       currentComboIndex = -1; // Reset progress
       comboFailed = false;
       inputProcessed = false;
+      startTime = null; // Reset the start time
       setComboRestartFeedback(); // Show feedback message
     }
 
@@ -244,16 +247,23 @@
       stepElement.classList.add(isCorrect ? 'correct' : 'incorrect');
     }
 
-    function showFinalFeedback(isSuccess) {
-      feedbackDisplay.textContent = isSuccess ? 'Combo Successful!' : 'Combo Failed!';
-      feedbackDisplay.classList.remove('attempting');
-      feedbackDisplay.classList.add(isSuccess ? 'green' : 'red');
+    function showFinalFeedback(isSuccess, elapsedTime) {
+      if (isSuccess) {
+        feedbackDisplay.textContent = `Combo Successful! Time: ${elapsedTime.toFixed(2)} seconds`;
+        feedbackDisplay.classList.remove('attempting');
+        feedbackDisplay.classList.add('green');
+      } else {
+        feedbackDisplay.textContent = 'Combo Failed!';
+        feedbackDisplay.classList.remove('attempting');
+        feedbackDisplay.classList.add('red');
+      }
     }
 
     function setAttemptingFeedback() {
       feedbackDisplay.textContent = 'Combo Attempting...';
       feedbackDisplay.classList.add('attempting');
       comboAttempted = true; // Mark the combo as attempted
+      startTime = Date.now(); // Start the timer when the first button is pressed
     }
 
     // Show a message when the combo is restarted due to a new button addition
@@ -267,6 +277,7 @@
       currentComboIndex = -1; // Reset the index to start again
       comboFailed = false;
       inputProcessed = false;
+      startTime = null; // Reset the timer
       resetFeedback(); // Reset the feedback and combo display
       highlightNextStep(); // Highlight the first step again
     }
@@ -328,7 +339,8 @@
       }
 
       if (currentComboIndex === comboSequence.length && !comboFailed) {
-        showFinalFeedback(true); // Combo completed successfully
+        const elapsedTime = (Date.now() - startTime) / 1000; // Calculate the time in seconds
+        showFinalFeedback(true, elapsedTime); // Combo completed successfully, show elapsed time
         setTimeout(refreshCombo, 1000); // Automatically refresh the combo after a 1 second delay
       }
     }
