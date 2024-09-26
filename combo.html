@@ -152,6 +152,7 @@
       button.addEventListener('click', () => {
         const input = button.getAttribute('data-input');
         comboSequence.push(input);
+        resetComboOnNewButton(); // Reset the combo when a new button is added
         updateComboDisplay();
       });
     });
@@ -172,6 +173,14 @@
       updateComboDisplay();
       resetFeedback();
     });
+
+    // Resets the combo progress when a new button is added
+    function resetComboOnNewButton() {
+      currentComboIndex = -1; // Reset progress
+      comboFailed = false;
+      inputProcessed = false;
+      setComboRestartFeedback(); // Show feedback message
+    }
 
     function updateComboDisplay() {
       if (comboSequence.length === 0) {
@@ -220,6 +229,12 @@
     function setAttemptingFeedback() {
       feedbackDisplay.textContent = 'Combo Attempting...';
       feedbackDisplay.classList.add('attempting');
+    }
+
+    // Show a message when the combo is restarted due to a new button addition
+    function setComboRestartFeedback() {
+      feedbackDisplay.textContent = 'Combo restarted due to new button addition.';
+      feedbackDisplay.classList.remove('green', 'red', 'attempting');
     }
 
     // Gamepad API logic
