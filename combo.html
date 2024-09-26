@@ -40,12 +40,12 @@
     .combo-input-section button {
       background-color: #444;
       color: #fff;
-      padding: 10px 20px;
+      padding: 10px 15px; /* Adjusted padding */
       margin: 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 18px; /* Adjusted font size */
     }
 
     .combo-input-section button:hover {
@@ -170,7 +170,7 @@
     #modal-content button {
       background-color: #444;
       color: #fff;
-      padding: 10px 20px;
+      padding: 10px 15px; /* Adjusted padding */
       margin: 5px;
       border: none;
       border-radius: 5px;
@@ -240,10 +240,18 @@
       <button data-input="square" class="icon">◻</button>
       <button data-input="circle" class="icon">◯</button>
       <button data-input="x" class="icon">✕</button>
+      <button data-input="l1" class="icon">L1</button>
+      <button data-input="r1" class="icon">R1</button>
+      <button data-input="l2" class="icon">L2</button>
+      <button data-input="r2" class="icon">R2</button>
+      <button data-input="l3" class="icon">L3</button>
+      <button data-input="r3" class="icon">R3</button>
+      <br>
       <button data-input="forward" class="direction">→</button>
       <button data-input="back" class="direction">←</button>
       <button data-input="up" class="direction">↑</button>
       <button data-input="down" class="direction">↓</button>
+      <br>
       <button id="reset">Reset Combo</button>
       <button id="refresh">Refresh Combo</button>
       <button id="custom-input">Custom Input</button>
@@ -272,6 +280,13 @@
       <button data-input="square" class="icon">◻</button>
       <button data-input="circle" class="icon">◯</button>
       <button data-input="x" class="icon">✕</button>
+      <button data-input="l1" class="icon">L1</button>
+      <button data-input="r1" class="icon">R1</button>
+      <button data-input="l2" class="icon">L2</button>
+      <button data-input="r2" class="icon">R2</button>
+      <button data-input="l3" class="icon">L3</button>
+      <button data-input="r3" class="icon">R3</button>
+      <br>
       <button data-input="forward" class="direction">→</button>
       <button data-input="back" class="direction">←</button>
       <button data-input="up" class="direction">↑</button>
@@ -304,6 +319,12 @@
       1: {name: 'circle', icon: '◯'},  // Circle button
       2: {name: 'square', icon: '◻'},  // Square button
       3: {name: 'triangle', icon: '△'},// Triangle button
+      4: {name: 'l1', icon: 'L1'},     // L1 button
+      5: {name: 'r1', icon: 'R1'},     // R1 button
+      6: {name: 'l2', icon: 'L2'},     // L2 button
+      7: {name: 'r2', icon: 'R2'},     // R2 button
+      10: {name: 'l3', icon: 'L3'},    // L3 button (Left Stick Click)
+      11: {name: 'r3', icon: 'R3'},    // R3 button (Right Stick Click)
       12: {name: 'up', icon: '↑'},     // D-pad Up
       13: {name: 'down', icon: '↓'},   // D-pad Down
       14: {name: 'back', icon: '←'},   // D-pad Left
@@ -317,6 +338,12 @@
       'circle': '◯',
       'square': '◻',
       'triangle': '△',
+      'l1': 'L1',
+      'r1': 'R1',
+      'l2': 'L2',
+      'r2': 'R2',
+      'l3': 'L3',
+      'r3': 'R3',
       'up': '↑',
       'down': '↓',
       'back': '←',
