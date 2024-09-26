@@ -78,6 +78,11 @@
       color: red;
     }
 
+    .next-step {
+      border-color: yellow;
+      color: yellow;
+    }
+
     .controller-input-section {
       text-align: center;
     }
@@ -114,6 +119,7 @@
       <button data-input="up">Up</button>
       <button data-input="down">Down</button>
       <button id="reset">Reset Combo</button>
+      <button id="refresh">Refresh Combo</button>
     </div>
 
     <!-- Combo Display Section -->
@@ -150,26 +156,46 @@
       resetFeedback();
     });
 
+    document.getElementById('refresh').addEventListener('click', () => {
+      currentComboIndex = 0;
+      updateComboDisplay();
+      resetFeedback();
+    });
+
     function updateComboDisplay() {
       if (comboSequence.length === 0) {
         comboDisplay.textContent = 'Your Combo Sequence Will Appear Here';
       } else {
-        comboDisplay.innerHTML = comboSequence.map((step, index) => 
+        comboDisplay.innerHTML = comboSequence.map((step, index) =>
           `<span class="combo-step" id="step-${index}">${step}</span>`
         ).join('');
+      }
+      highlightNextStep();
+    }
+
+    function highlightNextStep() {
+      // Clear previous highlights
+      comboSequence.forEach((_, index) => {
+        document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect', 'next-step');
+      });
+
+      // Highlight the next expected input
+      if (currentComboIndex < comboSequence.length) {
+        document.getElementById(`step-${currentComboIndex}`).classList.add('next-step');
       }
     }
 
     function resetFeedback() {
       feedbackDisplay.textContent = 'Press Buttons...';
       comboSequence.forEach((_, index) => {
-        document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect');
+        document.getElementById(`step-${index}`).classList.remove('correct', 'incorrect', 'next-step');
       });
+      highlightNextStep(); // Highlight the first step again
     }
 
     function showStepFeedback(index, isCorrect) {
       const stepElement = document.getElementById(`step-${index}`);
-      stepElement.classList.remove('correct', 'incorrect');
+      stepElement.classList.remove('correct', 'incorrect', 'next-step');
       stepElement.classList.add(isCorrect ? 'correct' : 'incorrect');
     }
 
@@ -218,6 +244,7 @@
 
       if (isCorrect) {
         currentComboIndex++;
+        highlightNextStep();
       }
 
       if (currentComboIndex === comboSequence.length) {
