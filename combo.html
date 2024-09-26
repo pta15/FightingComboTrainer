@@ -140,12 +140,11 @@
       vertical-align: middle;
     }
 
-    /* Touchpad and View Icon Styling */
-    .icon.touchpad-icon,
-    .icon.view-icon {
+    /* Refresh Button Icon Styling */
+    .icon.refresh-icon {
       display: inline-block;
-      width: 30px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       background-color: #444;
       border: 2px solid #888;
       border-radius: 4px;
@@ -154,8 +153,7 @@
       margin: 0 5px;
     }
 
-    .icon.touchpad-icon::after,
-    .icon.view-icon::after {
+    .icon.refresh-icon::after {
       content: '';
       display: block;
       width: 14px;
@@ -321,9 +319,9 @@
     const themes = {
       playstation: {
         name: 'PlayStation',
-        refreshButton: 'touchpad', // For refreshing combo
-        refreshButtonIndex: 17,
-        refreshButtonLabel: '<span class="icon touchpad-icon" title="Touchpad button"></span> Touchpad button',
+        refreshButton: 'share', // For refreshing combo
+        refreshButtonIndex: 8,
+        refreshButtonLabel: '<span class="icon refresh-icon" title="Share button"></span> Share button',
         buttons: [
           { input: 'face_top', label: '△', index: 3 },
           { input: 'face_left', label: '◻', index: 2 },
@@ -361,7 +359,7 @@
         name: 'Xbox',
         refreshButton: 'view', // For refreshing combo
         refreshButtonIndex: 8,
-        refreshButtonLabel: '<span class="icon view-icon" title="View button"></span> View button',
+        refreshButtonLabel: '<span class="icon refresh-icon" title="View button"></span> View button',
         buttons: [
           { input: 'face_top', label: 'Y', index: 3 },
           { input: 'face_left', label: 'X', index: 2 },
