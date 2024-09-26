@@ -220,6 +220,12 @@
       font-style: italic;
     }
 
+    /* Icon Image Styling */
+    .icon-image {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
     /* Modal Styling */
     #modal {
       display: none;
@@ -372,24 +378,6 @@
     let recentTimes = []; // Array to hold the last three times
     let timerInterval = null; // Interval for updating the timer display
 
-    // Define internal button names for consistent mapping
-    const internalButtons = [
-      'face_top',
-      'face_left',
-      'face_right',
-      'face_bottom',
-      'l1',
-      'r1',
-      'l2',
-      'r2',
-      'l3',
-      'r3',
-      'dpad_up',
-      'dpad_down',
-      'dpad_left',
-      'dpad_right',
-    ];
-
     // Define themes
     const themes = {
       playstation: {
@@ -428,6 +416,11 @@
           'dpad_down': '↓',
           'dpad_left': '←',
           'dpad_right': '→',
+          // Diagonal inputs (not used in PlayStation notation)
+          'uf': '↗',
+          'ub': '↖',
+          'df': '↘',
+          'db': '↙',
         }
       },
       xbox: {
@@ -466,53 +459,56 @@
           'dpad_down': '↓',
           'dpad_left': '←',
           'dpad_right': '→',
+          // Diagonal inputs (not used in Xbox notation)
+          'uf': '↗',
+          'ub': '↖',
+          'df': '↘',
+          'db': '↙',
         }
       },
       tekken: {
         name: 'Tekken Notation',
         buttons: [
-          { input: '1', label: '1' }, // Left Punch
-          { input: '2', label: '2' }, // Right Punch
-          { input: '3', label: '3' }, // Left Kick
-          { input: '4', label: '4' }, // Right Kick
-          { input: 'f', label: 'f' }, // Forward
-          { input: 'd', label: 'd' }, // Down
-          { input: 'b', label: 'b' }, // Back
-          { input: 'u', label: 'u' }, // Up
-          { input: 'df', label: 'df' },
-          { input: 'db', label: 'db' },
-          { input: 'uf', label: 'uf' },
-          { input: 'ub', label: 'ub' },
-          { input: 'n', label: 'n' }, // Neutral
+          { input: 'face_left', imgSrc: 'images/Tekken/buttons/1.webp', index: 2 }, // 1 (Square/X)
+          { input: 'face_top', imgSrc: 'images/Tekken/buttons/2.webp', index: 3 },  // 2 (Triangle/Y)
+          { input: 'face_bottom', imgSrc: 'images/Tekken/buttons/3.webp', index: 0 }, // 3 (Cross/A)
+          { input: 'face_right', imgSrc: 'images/Tekken/buttons/4.webp', index: 1 },  // 4 (Circle/B)
+          // Directions
+          { input: 'dpad_up', imgSrc: 'images/Tekken/arrows/u.webp', index: 12 },
+          { input: 'dpad_down', imgSrc: 'images/Tekken/arrows/d.webp', index: 13 },
+          { input: 'dpad_left', imgSrc: 'images/Tekken/arrows/b.webp', index: 14 },
+          { input: 'dpad_right', imgSrc: 'images/Tekken/arrows/f.webp', index: 15 },
         ],
         nameToIcon: {
-          '1': '1',
-          '2': '2',
-          '3': '3',
-          '4': '4',
-          'f': 'f',
-          'd': 'd',
-          'b': 'b',
-          'u': 'u',
-          'df': 'df',
-          'db': 'db',
-          'uf': 'uf',
-          'ub': 'ub',
-          'n': 'n',
-        }
+          'face_left': '<img src="images/Tekken/buttons/1.webp" alt="1" class="icon-image">',    // 1
+          'face_top': '<img src="images/Tekken/buttons/2.webp" alt="2" class="icon-image">',     // 2
+          'face_bottom': '<img src="images/Tekken/buttons/3.webp" alt="3" class="icon-image">',  // 3
+          'face_right': '<img src="images/Tekken/buttons/4.webp" alt="4" class="icon-image">',   // 4
+          'dpad_up': '<img src="images/Tekken/arrows/u.webp" alt="u" class="icon-image">',
+          'dpad_down': '<img src="images/Tekken/arrows/d.webp" alt="d" class="icon-image">',
+          'dpad_left': '<img src="images/Tekken/arrows/b.webp" alt="b" class="icon-image">',
+          'dpad_right': '<img src="images/Tekken/arrows/f.webp" alt="f" class="icon-image">',
+          // Diagonals
+          'uf': '<img src="images/Tekken/arrows/uf.webp" alt="uf" class="icon-image">',
+          'ub': '<img src="images/Tekken/arrows/ub.webp" alt="ub" class="icon-image">',
+          'df': '<img src="images/Tekken/arrows/df.webp" alt="df" class="icon-image">',
+          'db': '<img src="images/Tekken/arrows/db.webp" alt="db" class="icon-image">',
+          'n': '<img src="images/Tekken/arrows/n.webp" alt="n" class="icon-image">', // Neutral
+          // You can add mappings for button combinations like 'face_left + face_top' if needed
+        },
       },
       numpad: {
         name: 'Numpad Notation',
         buttons: [
-          { input: '1', label: '1' },
-          { input: '2', label: '2' },
-          { input: '3', label: '3' },
-          { input: '4', label: '4' },
-          { input: '5', label: '5' },
-          { input: '6', label: '6' },
           { input: '7', label: '7' },
           { input: '8', label: '8' },
           { input: '9', label: '9' },
+          { input: '4', label: '4' },
+          { input: '5', label: '5' },
+          { input: '6', label: '6' },
+          { input: '1', label: '1' },
+          { input: '2', label: '2' },
+          { input: '3', label: '3' },
         ],
         nameToIcon: {
           '1': '1',
@@ -545,14 +541,26 @@
         const comboButton = document.createElement('button');
         comboButton.setAttribute('data-input', button.input);
         comboButton.classList.add('icon');
-        comboButton.textContent = button.label;
+
+        if (button.imgSrc) {
+          comboButton.innerHTML = `<img src="${button.imgSrc}" alt="${button.input}" class="icon-image">`;
+        } else {
+          comboButton.textContent = button.label;
+        }
+
         comboButtonsContainer.appendChild(comboButton);
 
         // Create button for custom input modal
         const modalButton = document.createElement('button');
         modalButton.setAttribute('data-input', button.input);
         modalButton.classList.add('icon');
-        modalButton.textContent = button.label;
+
+        if (button.imgSrc) {
+          modalButton.innerHTML = `<img src="${button.imgSrc}" alt="${button.input}" class="icon-image">`;
+        } else {
+          modalButton.textContent = button.label;
+        }
+
         modalButtonsContainer.appendChild(modalButton);
       });
 
@@ -599,9 +607,12 @@
 
       theme.buttons.forEach(button => {
         if (button.index !== undefined && button.index !== null) {
-          buttonMapping[button.index] = { name: button.input, icon: button.label };
+          buttonMapping[button.index] = { name: button.input, icon: button.label || button.imgSrc };
         }
       });
+
+      // Update the combo display to reflect the new theme
+      updateComboDisplay();
     }
 
     // Initialize the theme
@@ -836,6 +847,14 @@
           });
         }
 
+        // Collect D-pad states
+        const dpadState = {
+          up: gamepad.buttons[12]?.pressed || false,
+          down: gamepad.buttons[13]?.pressed || false,
+          left: gamepad.buttons[14]?.pressed || false,
+          right: gamepad.buttons[15]?.pressed || false,
+        };
+
         // Detect newly pressed buttons
         gamepad.buttons.forEach((button, index) => {
           if (button.pressed && !prevButtonStates[index]) {
@@ -850,6 +869,34 @@
           prevButtonStates[index] = button.pressed;
         });
 
+        // Handle D-pad combinations for directions
+        let directionInput = null;
+        if (dpadState.up && dpadState.right) {
+          directionInput = 'uf';
+        } else if (dpadState.up && dpadState.left) {
+          directionInput = 'ub';
+        } else if (dpadState.down && dpadState.right) {
+          directionInput = 'df';
+        } else if (dpadState.down && dpadState.left) {
+          directionInput = 'db';
+        } else if (dpadState.up) {
+          directionInput = 'dpad_up';
+        } else if (dpadState.down) {
+          directionInput = 'dpad_down';
+        } else if (dpadState.left) {
+          directionInput = 'dpad_left';
+        } else if (dpadState.right) {
+          directionInput = 'dpad_right';
+        } else {
+          // Neutral (no direction)
+        }
+
+        if (directionInput) {
+          newlyPressedButtons.push(directionInput);
+        }
+
+        let currentInputs = newlyPressedButtons;
+
         if (currentComboIndex < comboSequence.length && !comboFailed) {
           const expectedInput = comboSequence[currentComboIndex];
 
@@ -857,9 +904,9 @@
 
           if (expectedInput.includes(' + ')) {
             const expectedButtons = expectedInput.split(' + ');
-            isCorrect = expectedButtons.every(button => newlyPressedButtons.includes(button));
+            isCorrect = expectedButtons.every(button => currentInputs.includes(button));
           } else {
-            isCorrect = newlyPressedButtons.includes(expectedInput);
+            isCorrect = currentInputs.includes(expectedInput);
           }
 
           if (isCorrect) {
@@ -871,8 +918,8 @@
             currentComboIndex++;
             highlightNextStep();
             setAttemptingFeedback();
-          } else if (newlyPressedButtons.length > 0) {
-            // Incorrect button pressed
+          } else if (currentInputs.length > 0) {
+            // Incorrect input
             comboFailed = true;
             showStepFeedback(currentComboIndex, false);
             showFinalFeedback(false);
