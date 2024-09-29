@@ -1,5 +1,7 @@
 # Fighting Game Combo Trainer
 
+Currently live at https://pta15.github.io/FightingComboTrainer/
+
 A web app designed to help players practice fighting game combos using either an on-screen interface or a connected game controller. The app provides real-time feedback on combo inputs, tracks the time to complete combos, and supports multiple controller themes.
 
 ## Features
@@ -28,11 +30,12 @@ _TODO: Add screenshots of the interface here_
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/fighting-game-combo-trainer.git
+   git clone https://github.com/pta15/FightingComboTrainer.git
 2. **Open the Project:**
    Open the index.html file in your web browser.
 
 ### Usage
+You can also access the app via github pages here: [Fighting Game Combo Trainer](https://pta15.github.io/FightingComboTrainer/)
 1. **Select Controller Theme:**
    Use the dropdown to select between PlayStation, Xbox, Tekken, or Numpad notation.
 2. **Input Combos:**
