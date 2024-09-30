@@ -15,10 +15,6 @@ A web app designed to help players practice fighting game combos using either an
 - **Auto-Refresh**: Automatically resets the combo sequence after a successful completion.
 - **Recent Combo Logs**: Displays the last three combo execution times.
 
-## Screenshots
-
-_TODO: Add screenshots of the interface here_
-
 ## Getting Started
 
 ### Prerequisites
@@ -75,6 +71,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-- **Developer**: [Your Name]
-- **Email**: [Your Email]
-- **Project Link**: [GitHub Repository Link]
+- **Developer**: Abdihafid Abdirahman
+- **Email**: abdihafid123@hotmail.co.uk
+- **Project Link**: https://github.com/pta15/FightingComboTrainer
